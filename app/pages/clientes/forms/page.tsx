@@ -1,5 +1,4 @@
 "use client"
-
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,21 +16,21 @@ import { paymentMethods, plans, rangePaymentDates, sectors } from "../models/sel
 
 
 export default function ClienteFormPage() {
-    const { register, handleSubmit, setValue, formState: { errors }, reset , watch} = useForm<ClienteModel>()
+    const { register, handleSubmit, setValue, formState: { errors }, reset, watch } = useForm<ClienteModel>()
     const [loadingLocation, setLoadingLocation] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpenCreated, setIsOpenCreated] = useState(false);
     const [isErrorCreated, setIsErrorCreated] = useState(false);
 
-   const pago = watch("paymentDate");
+    const pago = watch("initialPayment");
 
     const onSubmit = (data: ClienteModel) => {
         setIsSubmitting(true);
-        const paymentDateRange = data.paymentDate; // "date-date"
-        if (data.paymentDate) {
-            data.paymentDate = formatDateRangeAction(data.paymentDate);
+        const paymentDateRange = data.initialPayment;
+        if (data.initialPayment) {
+            data.initialPayment = formatDateRangeAction(data.initialPayment);
         }
-        createClientNetworkAction({...data , range_payment: paymentDateRange}).then(() => {
+        createClientNetworkAction({ ...data, range_payment: paymentDateRange }).then(() => {
             console.log(pago);
             setIsOpenCreated(true);
             reset();
@@ -120,18 +119,18 @@ export default function ClienteFormPage() {
                             {errors.plan && <span className="text-red-500 text-xs">Este campo es requerido</span>}
                         </div>
                         <div>
-                            <Label htmlFor="paymentDate">Rango de Fecha de Pago</Label>
-                            <Select onValueChange={(value) => setValue("paymentDate", value)}>
+                            <Label htmlFor="initialPayment">Rango de Fecha de Pago</Label>
+                            <Select onValueChange={(value) => setValue("initialPayment", value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona un rango de fecha" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-purple-50">
-                                    {rangePaymentDates.map(rango => (
-                                        <SelectItem key={rango.value} value={rango.value}>{rango.label}</SelectItem>
+                                    {rangePaymentDates.map(range => (
+                                        <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.paymentDate&& <span className="text-red-500 text-xs">Este campo es requerido</span>}
+                            {errors.initialPayment && <span className="text-red-500 text-xs">Este campo es requerido</span>}
                         </div>
                         <div>
                             <Label htmlFor="plan">Plan</Label>
@@ -169,8 +168,8 @@ export default function ClienteFormPage() {
                                     <SelectValue placeholder="Selecciona método de pago" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-purple-50">
-                                    {paymentMethods.map(metodo => (
-                                        <SelectItem key={metodo.value} value={metodo.value}>{metodo.label}</SelectItem>
+                                    {paymentMethods.map(method => (
+                                        <SelectItem key={method.value} value={method.value}>{method.label}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>

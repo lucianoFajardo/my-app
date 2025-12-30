@@ -3,13 +3,15 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, CardAction } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Trash } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Pencil, Search, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import readClientDataAction from "../actions/read-client-data-action";
 import { ClienteModel } from "../models/client-model";
 import { CardEditCliente } from "./dialog-edit";
 import { DialogDeleteCliente } from "../delete/dialog-delete";
 import ShowDataPageClient from "../show-data/show-data-page";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export default function EditDateClientPage() {
     const [dataClient, setDataClient] = useState<ClienteModel[]>([]);
@@ -20,23 +22,36 @@ export default function EditDateClientPage() {
     const [clientSelectedShowData, setClientSelectedShowData] = useState<ClienteModel>();
     const [isOpenDialogShowData, setIsOpenDialogShowData] = useState(false);
 
-    const [page, setPage] = useState(0);
-    const [loading, setLoading] = useState(false);
     const [_, setSelectDataID] = useState('');
     const [clientSelectedDate, setClientSelectedDate] = useState<ClienteModel>();
+
+    // Parametros para la busqueda y filtrado de los datos
+    const [searchParam, setSearchParam] = useState<string | undefined>("");
+
+    // Paginación de la tabla de clientes
+    const [page, setPage] = useState(0);
+    const [loading, setLoading] = useState(false);
     const limit = 15;
 
+
     useEffect(() => {
-        setLoading(true);
         const fetchData = async () => {
             const from = page * limit
             const to = from + limit - 1;
-            const data = await readClientDataAction({ from, to });
-            setDataClient((prevData) => [...prevData, ...data]);
+            const data = await readClientDataAction({ from, to, searchParam });
+            setDataClient(data);
             setLoading(false);
         };
-        fetchData();
-    }, [page]);
+        const timeOutId = setTimeout(() => {
+            fetchData();
+        }, 300);
+        return () => clearTimeout(timeOutId);
+    }, [page, searchParam]);
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchParam(e.target.value);
+        setPage(0); // Reiniciar a la primera página al buscar
+    }
 
     const handelEditClick = (idClient: string) => {
         setSelectDataID(idClient);
@@ -78,11 +93,21 @@ export default function EditDateClientPage() {
         setIsOpenDialogDelete(false);
     };
 
+    const handleNextPage = () => {
+        setPage(prevPage => prevPage + 1);
+    }
+
+    const handelePreviousPage = () => {
+        setPage(page > 0 ? page - 1 : 0)
+    }
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-96">
-                <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></span>
-                <span className="ml-4 text-primary-700 font-semibold">Cargando...</span>
+            <div className="fixed top-0 left-0 w-full h-screen flex items-center justify-center bg-white/80 z-50 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-4">
+                    <span className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary-500"></span>
+                    <span className="text-primary-700 font-bold text-lg animate-pulse">Cargando datos...</span>
+                </div>
             </div>
         );
     }
@@ -96,9 +121,15 @@ export default function EditDateClientPage() {
                         Aquí podrás editar la información de los clientes registrados.
                     </CardDescription>
                     <CardAction>
-                        <Button variant="ghost" className="text-primary-700 hover:bg-primary-100">
-                            Total Clientes Instalados: {dataClient.length}
-                        </Button>
+                        <div className="relative w-72">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
+                            <Input
+                                placeholder="Buscar cliente..."
+                                value={searchParam}
+                                onChange={handleSearch}
+                                className="pl-8 bg-white border-primary-200 focus-visible:ring-primary-500"
+                            />
+                        </div>
                     </CardAction>
                 </CardHeader>
                 <CardContent className="overflow-x-auto p-0">
@@ -161,7 +192,7 @@ export default function EditDateClientPage() {
                                                 onClick={() => handelEditClick(usuario.id_client)}
                                                 variant="outline"
                                                 size="sm"
-                                                className="flex items-center gap-2 border-primary-300 text-white hover:bg-primary-50"
+                                                className="flex items-center gap-2 border-primary-300 text-black hover:bg-purple-100"
                                             >
                                                 <Pencil className="w-4 h-4" />
                                                 Editar
@@ -173,7 +204,7 @@ export default function EditDateClientPage() {
                                                 }}
                                                 variant="outline"
                                                 size="sm"
-                                                className="flex items-center gap-2 border-primary-300 text-white hover:bg-primary-50"
+                                                className="flex items-center gap-2 border-primary-300 text-black hover:bg-purple-100"
                                             >
                                                 <Eye className="w-4 h-4" />
                                                 Ver Detalles
@@ -193,27 +224,41 @@ export default function EditDateClientPage() {
                             </TableBody>
                         </Table>
                     </div>
-                    {/* <Button
-                        onClick={() => setPage((prevPage) => prevPage + 1)}
-                        disabled={loading}
-                        className="mt-4 w-full"
-                        variant="secondary"
-                    >
-                        {loading ? 'Cargando...' : 'Cargar más'}
-                    </Button> */}
+                    <Separator className="my-2" />
+                    <CardFooter className="bg-primary-50 rounded-b-xl max-w-sm mx-auto">
+                        <CardAction>
+                            <div className="flex items-center gap-3 relative">
+                                <span className="text-sm text-primary-700 font-medium">
+                                    Página Actual {page + 1}
+                                </span>
+                                <div className="flex bg-white rounded-md border border-primary-200 shadow-sm m-2 relative">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={handelePreviousPage}
+                                        disabled={page === 0}
+                                        className="h-8 w-8 rounded-r-none hover:bg-primary-50"
+                                    >
+                                        <ChevronLeft className="w-4 h-4 text-primary-700" />
+                                    </Button>
+                                    <div className="w-4 h-4 bg-primary-200 position-relative"></div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={handleNextPage}
+                                        // Deshabilitar si la respuesta trajo menos datos que el tamaño de página (fin de la lista)
+                                        disabled={dataClient.length < (limit * (page + 1))}
+                                        className="h-8 w-8 rounded-l-none hover:bg-primary-50 "
+                                    >
+                                        <ChevronRight className="w-4 h-4 text-primary-700" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardAction>
+                    </CardFooter>
                 </CardContent>
-                <CardFooter className="bg-primary-50 rounded-b-xl max-w-sm mx-auto">
-                    
-                    <Button
-                        onClick={() => setPage((prevPage) => prevPage + 1)}
-                        disabled={loading}
-                        className="mt-4 w-full"
-                        variant="secondary"
-                    >
-                        {loading ? 'Cargando...' : 'Cargar más'}
-                    </Button>
-                </CardFooter>
             </Card>
+
             {isOpenDialogEdit && clientSelectedDate && (
                 <CardEditCliente
                     cliente={clientSelectedDate}

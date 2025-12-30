@@ -20,7 +20,7 @@ export interface ClienteEditProps {
     onSubmit?: (data: ClienteModel) => void;
 }
 
-export function CardEditCliente({ cliente, onCancel, isOpen , onSubmit}: ClienteEditProps) {
+export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: ClienteEditProps) {
     const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
         defaultValues: { ...cliente }
     });
@@ -28,13 +28,11 @@ export function CardEditCliente({ cliente, onCancel, isOpen , onSubmit}: Cliente
     const sectorValue = watch("sector");
 
     const onEditSubmit = async (data: ClienteModel) => {
-        console.log("Form data submitted:", data);
-        if (data.paymentDate != cliente.paymentDate) {
-            data.paymentDate = formatDateRangeAction(data.paymentDate);
+        if (data.initialPayment != cliente.initialPayment) {
+            data.initialPayment = formatDateRangeAction(data.initialPayment);
         } else {
-            data.paymentDate = cliente.paymentDate;
+            data.initialPayment = cliente.initialPayment;
         }
-        
         const dataGet = { ...data };
         await UpdateClientAction(dataGet.id_client!, dataGet)
             .then(() => {
@@ -45,8 +43,6 @@ export function CardEditCliente({ cliente, onCancel, isOpen , onSubmit}: Cliente
                 throw new Error("Error al actualizar los datos del cliente", error as Error);
             });
     }
-
-    //TODO; Solucionar el problema de las fechas que me muestra una fecha errone al actulizar los datos
 
     return (
         <Dialog open={isOpen} onOpenChange={onCancel}>
@@ -95,9 +91,12 @@ export function CardEditCliente({ cliente, onCancel, isOpen , onSubmit}: Cliente
                             {errors.sector && <span className="text-red-500 text-xs">Este campo es requerido</span>}
                         </div>
                         <div>
-                            <Label htmlFor="paymentDate">Rango de Fecha de Pago</Label>
-                            <p className="text-sm p-2">fecha pago Actual: {cliente.paymentDate}</p>
-                            <Select onValueChange={(value) => setValue("paymentDate", value)}>
+                            <Label htmlFor="initialPayment">Rango de Fecha de Pago</Label>
+                            <p className="text-sm p-2">fecha pago Actual: {cliente.initialPayment}</p>
+                            <Select onValueChange={(value) => {
+                                setValue("initialPayment", value)
+                                setValue("range_payment", value)
+                            }}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona un rango de fecha" />
                                 </SelectTrigger>
@@ -107,7 +106,7 @@ export function CardEditCliente({ cliente, onCancel, isOpen , onSubmit}: Cliente
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.paymentDate && <span className="text-red-500 text-xs">Este campo es requerido</span>}
+                            {errors.initialPayment && <span className="text-red-500 text-xs">Este campo es requerido</span>}
                         </div>
                         <div>
                             <Label htmlFor="plan">Plan</Label>

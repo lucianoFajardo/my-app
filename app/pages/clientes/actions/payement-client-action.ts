@@ -3,25 +3,27 @@
 import { createClient } from "@/utils/supabase/server";
 import { ClientPaymentInfo } from "../models/client-model";
 
+// TODO: ajustar los parámetros según lo que necesites para el pago de los clientes el total y podr mostrar los meses que pago el cliente
 export async function paymentDataClientAction(
     props: ClientPaymentInfo,
     dateToPay: string[],
-    newPaidUntilDate?: string) {
+    newPaidUntilDate?: string,
+    payedPlanAmount?: number,
+) {
     // Lógica para procesar el pago del cliente
     try {
         const supabase = await createClient();
-
         // creamos el baucher de pago en la tabla payments
         const { error } = await supabase.from("payments").insert({
             payment_date: new Date(),
             client_id: props.id_client,
             status_payment: true,
-            months_paid: dateToPay
+            months_paid: dateToPay,
+            amount_pay: payedPlanAmount
         });
         if (error) throw new Error("Error al insertar el pago" + (error as Error).message);
 
         // actualizamos la fecha hasta la que está pagado el cliente en la tabla clients
-        console.log("Nueva fecha hasta la que está pagado el cliente:", newPaidUntilDate);
         const { error: updateError } = await supabase.from('clients').update({
             paid_until_date: newPaidUntilDate
         }).eq('id_client', props.id_client);

@@ -138,7 +138,7 @@ export function AppSidebar() {
                                             options={[
                                                 { label: "Crear clientes", href: "/pages/clientes/forms" },
                                                 { label: "Editar clientes", href: "/pages/clientes/edit" },
-                                                { label: "Verificar pagos clientes", href: "/pages/clientes/verify" }
+                                                { label: "Verificar pagos clientes", href: "/pages/clientes/payment" }
                                             ]}
                                         />
                                     )

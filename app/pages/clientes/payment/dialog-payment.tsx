@@ -11,7 +11,8 @@ type DialogPaymentProps = {
     isOpen: boolean;
     onClose: () => void;
     data: ClientPaymentInfo | undefined;
-    onPaySuccess: (client: ClientPaymentInfo, newPaidUntilDate: string) => void;
+    // CAMBIO: Ahora espera un array de strings con las fechas pagadas
+    onPaySuccess: (client: ClientPaymentInfo, paidMonthDates: string[]) => void;
 };
 
 export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPaymentProps) {
@@ -22,7 +23,6 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
 
     // Usamos el campo monthsDue que ya viene calculado del componente padre (App)
     const dueMonths = data.monthsDue instanceof Array ? data.monthsDue : [];
-    // Calcula el total y si hay meses seleccionados
     const totalToPay = selectedMonthsToPay.length * Number(data.plan);
     const isPayButtonDisabled = loading || selectedMonthsToPay.length === 0;
 
@@ -41,9 +41,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                 // CRUCIAL: Solo permitir selecciones CONSECUTIVAS desde el inicio de la deuda.
                 // Si el usuario selecciona un mes que no es consecutivo al último seleccionado, forzamos la selección hasta ese punto.
                 if (newSelection.length > 1) {
-                    const firstDueMonth = dueMonths[0].date;
                     const selectedDates = newSelection.map(m => m.date);
-
                     // Asegurar que la selección sea contigua desde el primer mes adeudado
                     const isContiguous = selectedDates.every((date, idx) => {
                         if (idx === 0) return true; // El primer mes siempre es válido
@@ -64,42 +62,34 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
         });
     };
 
-    // Función para seleccionar todos los meses pendientes de una vez
     const selectAllMonths = () => {
         if (dueMonths.length > 0) {
             setSelectedMonthsToPay(dueMonths);
         }
     };
 
-    // Función para deseleccionar todos
     const clearSelection = () => {
         setSelectedMonthsToPay([]);
     };
 
     const handlePaySelectedMonths = async () => {
         if (isPayButtonDisabled) return;
-
         setLoading(true);
         try {
-            // 1. Preparamos las fechas que se pagarán (solo el campo 'date')
+            // 1. Preparamos las fechas que se pagarán (este es el array que necesitamos)
             const datesToPay = selectedMonthsToPay.map(m => m.date);
-            // 2. Calculamos la nueva fecha hasta la que estará pagado (CRUCIAL)
-            const monthsCount = selectedMonthsToPay.length;
-            // La lista ya está ordenada cronológicamente
-            const lastPaidMonth = selectedMonthsToPay[monthsCount - 1];
+            // 2. Calculamos la nueva fecha hasta la que estará pagado (para la BD)
+            const lastPaidMonth = selectedMonthsToPay[selectedMonthsToPay.length - 1];
             const lastPaidMonthDate = new Date(lastPaidMonth.date);
-            // La nueva paid_until_date será el primer día del mes *siguiente* al último mes pagado.
             lastPaidMonthDate.setMonth(lastPaidMonthDate.getMonth() + 1);
             const newPaidUntilDate = lastPaidMonthDate.toISOString().split('T')[0];
-            // 3. Ejecutamos la acción con el array de fechas y la fecha final
-            const resultNewPaidUntil = await paymentDataClientAction(data, datesToPay, newPaidUntilDate);
-            // 4. Actualizamos la UI principal (usando el resultado de la acción)
-            onPaySuccess(data, resultNewPaidUntil || newPaidUntilDate);
+
+            // 3. Ejecutamos la acción del servidor
+            await paymentDataClientAction(data, datesToPay, newPaidUntilDate, totalToPay);
+            onPaySuccess(data, datesToPay);
             setSelectedMonthsToPay([]); // Limpiar selección
             onClose(); // Cerramos el diálogo al éxito
-            console.log("Pago realizado con éxito");
         } catch (error) {
-            console.error("Error al pagar los meses seleccionados", error);
             // Implementar notificación de error aquí
         } finally {
             setLoading(false);
@@ -123,11 +113,11 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     <DialogDescription>
                         Cliente: <span className="font-semibold text-indigo-700">{data.name} {data.lastname}</span>
                         <br />
-                        Pagado Hasta: <span className="font-semibold text-red-500">{data.paid_until_date}</span>
+                        Pagado Hasta: <span className="font-semibold text-indigo-700"> {data.paid_until_date}</span>
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="mt-4 space-y-4">
+                <div className="mt-2 space-y-2">
                     <h4 className="text-sm font-medium text-gray-500">
                         Selecciona los meses específicos a cubrir (${totalToPay} c/u):
                     </h4>
@@ -139,7 +129,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                                     Seleccionar Todo ({dueMonths.length})
                                 </Button>
                                 {selectedMonthsToPay.length > 0 && (
-                                    <Button variant="outline" size="sm" onClick={clearSelection} className="text-xs py-1 h-auto text-red-500 hover:bg-red-50">
+                                    <Button variant="outline" size="sm" onClick={clearSelection} className="text-xs py-1 h-auto text-red-700 hover:bg-red-50 bg-red-100">
                                         Limpiar Selección
                                     </Button>
                                 )}
@@ -172,7 +162,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     {/* Resumen y Botón de Pago */}
                     <div className="border-t pt-4 flex justify-between items-center">
                         <p className="text-lg font-bold text-gray-800">
-                            Total: <span className="text-indigo-600">${totalToPay.toFixed(2)}</span> ({selectedMonthsToPay.length} meses)
+                            Total: <span className="text-indigo-600">${totalToPay.toFixed(4)}</span> ({selectedMonthsToPay.length} meses)
                         </p>
                         <Button
                             onClick={handlePaySelectedMonths}

@@ -6,7 +6,7 @@ export type ClienteModel = {
     lastname: string
     antennaName: string
     sector: string
-    paymentDate: string
+    initialPayment: string
     plan: string
     technicalName: string
     phone1: string
@@ -32,7 +32,7 @@ export type ClientPaymentInfo = {
     name: string
     lastname: string
     antennaName: string
-    paymentDate: Date
+    initialPayment: Date
     paid_until_date: string
     plan: string
     phone1: string
@@ -42,5 +42,12 @@ export type ClientPaymentInfo = {
     planStatus: PaymentStatus
     monthsDue: DueMonth[]
     payments: Payment[]
+    range_payment: string
 }
+
+export type DetailedStatus = {
+    status: 'paid' | 'grace_period' | 'due' | 'upcoming';
+    message: string;
+    daysRemaining?: number; // Días restantes en el período de gracia
+};
 

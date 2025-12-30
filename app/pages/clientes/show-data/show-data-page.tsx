@@ -90,12 +90,6 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <CalendarDays className="w-4 h-4 text-pink-500" /> Fecha de prox pago
-                                        </TableCell>
-                                        <TableCell>{props.paymentDate}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
                                             <Calendar className="w-4 h-4 text-pink-500" /> rango de fechas
                                         </TableCell>
                                         <TableCell>{props.range_payment}</TableCell>
