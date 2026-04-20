@@ -6,7 +6,6 @@ import { Eye, Check, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { ClientPaymentInfo } from "../models/client-model";
 import { DataClientPaymentInfo } from "../actions/read-client-data-action";
-
 import ShowPayments from "./show-payments";
 import { readPaymentsAction } from "../actions/read-payments-action";
 import { Payment } from "../models/payment-model";
@@ -15,6 +14,8 @@ import { getMonthsDue, getPlanStatus } from "../actions/status-plan-action";
 import { DialogPayment } from "./dialog-payment";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Input } from "@/components/ui/input";
+
+import { DateRange } from "react-day-picker";
 
 // Normaliza una fecha (string o Date) a un string 'YYYY-MM-DD'
 const normalizeDateStr = (d: string | Date): string => {
@@ -45,13 +46,14 @@ export default function PaymentPageClient() {
     // Paginación de la tabla de pagos de clientes
     const [page, setPage] = useState(0);
     const itemsPerPage = 30;
+    // Aplicando filtro para poder filtraro los datos por fechas y rangos de pagos
+    const [showDebtorsOnly, setShowDebtorsOnly] = useState(false);
 
     // Carga inicial de datos
     useEffect(() => {
         const fetchData = async () => {
             const from = page * itemsPerPage;
             const to = from + itemsPerPage - 1;
-
             const rawData = await DataClientPaymentInfo({ from, to, searchParam });
             const processedData = rawData.map(client => {
                 // Usamos la función para limpiar los datos que vienen de la BD
@@ -74,6 +76,24 @@ export default function PaymentPageClient() {
         return () => clearTimeout(timeoutId);
     }, [page, searchParam]);
 
+    // Función para verificar si una fecha está dentro del rango seleccionado sino debe de pagar
+    const isDateInRange = (d: string | Date, range?: DateRange) => {
+        if (!range?.from) return true;
+        const date = typeof d === "string" ? new Date(d) : d;
+        const from = new Date(range.from);
+        const to = range.to ? new Date(range.to) : new Date(range.from);
+        date.setHours(0, 0, 0, 0);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(0, 0, 0, 0);
+        return date >= from && date <= to;
+    };
+
+    // Lista derivada con filtros aplicados
+    const displayedClients = clientInfo.filter(c => {
+        const debtorOk = !showDebtorsOnly || c.planStatus !== "paid";
+        const dateOk = isDateInRange(c.initialPayment, );
+        return debtorOk && dateOk;
+    });
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchParam(e.target.value);
@@ -85,7 +105,6 @@ export default function PaymentPageClient() {
         setOpen(true);
     };
 
-
     const handleShowPayments = async (cliente: ClientPaymentInfo) => {
         const payments = await readPaymentsAction(cliente.id_client);
         setSelectedCliente(cliente);
@@ -94,6 +113,7 @@ export default function PaymentPageClient() {
     };
 
     const handleClosePayments = () => {
+        // Cerra el dialogo y limpiar los datos.
         setShowPaymentsOpen(false);
         setSelectedPayments([]);
         setSelectedCliente(undefined);
@@ -131,7 +151,6 @@ export default function PaymentPageClient() {
         // 2. Actualizamos el cliente seleccionado (Dialog)
         setSelectedCliente(prevSelected => {
             if (!prevSelected || prevSelected.id_client !== client.id_client) return prevSelected;
-
             const combinedPaidMonths = [...(prevSelected.paidMonths || []), ...paidMonthDates];
             const newPaidMonths = normalizePaidMonths(combinedPaidMonths);
             const newDueMonths = getMonthsDue(prevSelected.initialPayment, newPaidMonths);
@@ -162,15 +181,23 @@ export default function PaymentPageClient() {
                         Gestión de pagos y estados de los clientes.
                     </CardDescription>
                     <CardAction>
-                        {/* Agregar filtrado de datos , crear una funcion , setState, un Action que se encarge*/}
-                        <div className="relative w-72">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
-                            <Input
-                                placeholder="Buscar cliente..."
-                                value={searchParam}
-                                onChange={handleSearch}
-                                className="pl-8 bg-white border-primary-200 focus-visible:ring-primary-500"
-                            />
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <Button
+                                variant={showDebtorsOnly ? "default" : "outline"}
+                                onClick={() => setShowDebtorsOnly(prev => !prev)}
+                                className={showDebtorsOnly ? "bg-red-600 text-white" : "bg-blue-700 text-white hover:bg-blue-500 hover:text-white"}
+                            >
+                                Solo deudores
+                            </Button>
+                            <div className="relative w-72">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
+                                <Input
+                                    placeholder="Buscar cliente..."
+                                    value={searchParam}
+                                    onChange={handleSearch}
+                                    className="pl-8 bg-white border-primary-200 focus-visible:ring-primary-500"
+                                />
+                            </div>
                         </div>
                     </CardAction>
                 </CardHeader>
@@ -189,7 +216,7 @@ export default function PaymentPageClient() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {clientInfo.map((cliente) => {
+                                {displayedClients.map((cliente) => {
                                     return (
                                         <TableRow key={cliente.id_client} className="hover:bg-primary-50">
                                             <TableCell>{cliente.name} {cliente.lastname}</TableCell>

@@ -6,8 +6,6 @@ import { redirect } from 'next/navigation'
 export async function login(formData: FormData) {
     const supabase = await createClient()
     //TODO: Agregar manejo de errors , validacion , verificar vulnerabilidades
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
     const data = {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
@@ -17,6 +15,6 @@ export async function login(formData: FormData) {
         redirect('/error')
     }
     revalidatePath('/', 'layout')
-    redirect('/pages/dashboard')
+    redirect('/dashboard')
 }
 

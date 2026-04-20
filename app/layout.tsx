@@ -1,15 +1,30 @@
 import "./globals.css";
+import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
+import { createClient } from "@/utils/supabase/server";
 
-export default function RootLayout({
+export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    // Unauthenticated: render content without the admin panel/sidebar
+    return children;
+  }
+
+  // Authenticated: wrap content with admin panel layout
+  // envolviendo el contenido con el layout del panel de administración 
   return (
     <html lang="es">
       <body>
-        {children}
+        <AdminPanelLayout>{children}</AdminPanelLayout>
       </body>
     </html>
   )
+    ;
 }

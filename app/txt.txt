@@ -1,0 +1,5 @@
+%------------------Formato de color-----------------------%
+color principal : Blue 700 (bg-)
+color secudarios: Blue 500 (hovers)
+
+%----------------- txt -----------------------------------%

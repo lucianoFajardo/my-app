@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import path from 'path'
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -32,18 +33,19 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     const { pathname } = request.nextUrl
+    const isPublicPath = pathname.startsWith('/login') || pathname.startsWith('/register')
 
     // 1. Si NO hay usuario y trata de entrar a rutas protegidas o al home
-    if (!user && (pathname.startsWith('/pages') || pathname === '/')) {
+    if (!user && !isPublicPath) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
     }
 
     // 2. Si SI hay usuario y trata de entrar al login
-    if (user && pathname.startsWith('/login')) {
+    if (user && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
         const url = request.nextUrl.clone()
-        url.pathname = '/pages/dashboard'
+        url.pathname = '/dashboard'
         return NextResponse.redirect(url)
     }
     return supabaseResponse

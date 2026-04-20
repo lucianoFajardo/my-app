@@ -11,7 +11,6 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 overflow-hidden relative">
-            {/* Elementos decorativos de fondo (Blobs) */}
             <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-20 right-20 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
             <Card className="w-full max-w-md shadow-2xl border-white/20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl relative z-10">

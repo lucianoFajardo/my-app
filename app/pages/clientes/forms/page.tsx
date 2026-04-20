@@ -21,9 +21,7 @@ export default function ClienteFormPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpenCreated, setIsOpenCreated] = useState(false);
     const [isErrorCreated, setIsErrorCreated] = useState(false);
-
-    const pago = watch("initialPayment");
-
+    const pago = watch("initialPayment"); 
     const onSubmit = (data: ClienteModel) => {
         setIsSubmitting(true);
         const paymentDateRange = data.initialPayment;

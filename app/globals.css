@@ -47,15 +47,15 @@
   --radius: 0.625rem;
 
   /* Paleta principal - Celeste, Azul y Blanco */
-  --background: oklch(81.262% 0.07995 288.49); /* Blanco con tinte celeste muy suave */
+  --background: oklch(100% 0.00011 271.152); /* Blanco con tinte celeste muy suave */
   --foreground: oklch(0.2 0.1 250); /* Azul oscuro para texto */
   --card: oklch(1 0 0); /* Blanco puro */
   --card-foreground: oklch(0.2 0.1 250); /* Azul oscuro */
-  --popover: oklch(88.757% 0.07215 213.817); /* Blanco con ligero tinte celeste */
+  --popover: oklch(100% 0.00011 271.152); /* Blanco con ligero tinte celeste */
   --popover-foreground: oklch(0.2 0.1 250); /* Azul oscuro */
 
   /* Colores primarios - Celeste */
-  --primary: oklch(54.435% 0.25566 280.633); /* Celeste intenso */
+  --primary: oklch(43.731% 0.23712 267.626 / 0.918); /* Celeste intenso */
   --primary-foreground: oklch(1 0 0); /* Blanco */
 
   /* Colores secundarios - Azul */
