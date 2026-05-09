@@ -148,7 +148,6 @@ export default function PaymentPageClient() {
             return c;
         }));
 
-        // 2. Actualizamos el cliente seleccionado (Dialog)
         setSelectedCliente(prevSelected => {
             if (!prevSelected || prevSelected.id_client !== client.id_client) return prevSelected;
             const combinedPaidMonths = [...(prevSelected.paidMonths || []), ...paidMonthDates];

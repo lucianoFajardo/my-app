@@ -5,7 +5,8 @@ import {
   LayoutGrid,
   LucideIcon,
   User,
-  PencilRulerIcon
+  PencilRulerIcon,
+  ToolCase
 } from "lucide-react";
 
 type Submenu = {
@@ -78,9 +79,15 @@ export function getMenuList(): Group[] {
           ]
         },
         {
-          href: "/tags",
-          label: "Tags",
-          icon: Tag
+          href: "/repairs",
+          label: "Arreglos",
+          icon: ToolCase,
+          submenus: [
+            {
+              href: "/pages/scheduler/repairs/form",
+              label: "Nuevo Arreglo"
+            }
+          ]
         }
       ]
     },

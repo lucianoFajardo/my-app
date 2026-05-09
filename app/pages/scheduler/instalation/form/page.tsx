@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { FormInstalModel, hours_array } from '../../models/form-instal-model'
+import { FormInstalModel, hours_array } from '../models/form-instal-model'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 
 import { Inspect, CalendarDays, MapPin, User, FileText } from 'lucide-react';
-import createInstalationAction from '../../actions/create-instalation-action';
+import createInstalationAction from '../actions/create-instalation-action';
 
 export default function InstalationPage() {
     const { register, handleSubmit, control, formState: { errors }, reset } = useForm<FormInstalModel>();
