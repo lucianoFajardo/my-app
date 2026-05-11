@@ -1,7 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Tag,
   Users,
-  Settings,
   LayoutGrid,
   LucideIcon,
   User,
@@ -28,7 +27,7 @@ type Group = {
   menus: Menu[];
 };
 
-export function getMenuList(): Group[] {
+export function getMenuList(pathname: string): Group[] {
   return [
     {
       groupLabel: "",
@@ -99,11 +98,11 @@ export function getMenuList(): Group[] {
           label: "Usuarios",
           icon: Users
         },
-        {
-          href: "/account/edit",
-          label: "Ajustes de Cuenta",
-          icon: Settings
-        }
+        // {
+        //   href: "/account/edit",
+        //   label: "Ajustes de Cuenta",
+        //   icon: Settings
+        // }
       ]
     }
   ];

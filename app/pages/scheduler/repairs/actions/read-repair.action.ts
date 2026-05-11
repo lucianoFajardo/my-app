@@ -9,6 +9,10 @@ export default async function readRepairAction(props: string) {
             .select('id_repair , client_key (id_client, name , address), status')
             .or(`nombre.ilike.%${props}%,direccion.ilike.%${props}%`)
             .limit(5);
+        if (error) {
+            throw new Error(`Error al obtener las reparaciones: ${error.message}`);
+        }
+        return { data, error: null }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
         throw new Error('Error al leer la reparación');
