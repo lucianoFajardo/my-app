@@ -21,17 +21,20 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CalendarModelDataInstal } from '../../models/calendar-instal-model'
-import readInstalationAction from '../../actions/read-instalation-action'
+import { CalendarModelDataInstal } from '../models/calendar-instal-model'
+import readInstalationAction from '../actions/read-instalation-action'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import updateStatusInstalationAction from '../../actions/update-status-instalation-action'
+import updateStatusInstalationAction from '../actions/update-status-instalation-action'
 import AlertDeleteInstalation from '../delete/alert-delete-instalation'
-
+import deleteInstallationAction from '../actions/delete-instalation-action'
+import ShowDetails from '../show-details/show-details'
 
 export default function CalendarDashboardPage() {
     const [installations, setInstallations] = useState<CalendarModelDataInstal[]>();
     const [isOpenDelete, setIsOpenDelete] = useState(false);
-    const [selectedInstal, setSelectedInstal] = useState<CalendarModelDataInstal>();
+    const [selectDelete, setSelectDelete] = useState<CalendarModelDataInstal>();
+    const [isOpenDetails, setIsOpenDetails] = useState(false);
+    const [selectDetails, setSelectDetails] = useState<CalendarModelDataInstal>();
     useEffect(() => {
         // llamamos a la base de datos y alimentamos nuestrar variables
         const fetchData = async () => {
@@ -95,12 +98,25 @@ export default function CalendarDashboardPage() {
         await updateStatusInstalationAction(id);
     }
 
+    const handleDelete = async (value: CalendarModelDataInstal) => {
+        setSelectDelete(value);
+        setIsOpenDelete(true);
+    }
 
     // Accion para eliminar una instalación (remueve la instalación del estado)
-    const deleteInstallation = (id: string) => {
-        // Eliminar la instalacion de la base de datos , desplegar un alerta de confirmacion y luego actualizar el estado para removerlo
-        // setInstallations(prev => prev.filter(inst => inst.id_instal !== id))
-        // TODO : agregar aqui la confirmacion y llamar a la funcion que tengo mas abajo aqui cod: KO12
+    const deleteInstallation = async () => {
+        await deleteInstallationAction(selectDelete!).then(() => {
+            setInstallations(
+                prev => prev?.filter(i => i.id_instal !== selectDelete?.id_instal)
+            )
+        }).catch(() => {
+            throw new Error('Error al eliminar la instalación')
+        })
+    }
+
+    const handleShowDetails = async (value: CalendarModelDataInstal) => {
+        setSelectDetails(value);
+        setIsOpenDetails(true);
     }
 
     return (
@@ -268,16 +284,17 @@ export default function CalendarDashboardPage() {
                                                     size="sm"
                                                     variant="outline"
                                                     className="text-red-500 border-red-200 hover:bg-red-50"
-                                                    onClick={() => deleteInstallation(inst.id_instal)}
+                                                    onClick={() => handleDelete(inst)}
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </Button>
-
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
                                                     className="flex-1 border-slate-200 hover:bg-slate-50"
-                                                // Aquí podrías agregar una función para mostrar más detalles de la instalación
+                                                    onClick={() => {
+                                                        handleShowDetails(inst);
+                                                    }}
                                                 >
                                                     Ver Detalles
                                                 </Button>
@@ -322,15 +339,23 @@ export default function CalendarDashboardPage() {
                         </CardContent>
                     </Card>
                     {
-                        //* COD: KO12
                         isOpenDelete && (
                             <AlertDeleteInstalation
                                 onConfirm={() => {
-                                    deleteInstallation(selectedInstal?.id_instal || '')
+                                    deleteInstallation()
                                     setIsOpenDelete(false)
                                 }}
                                 onCancel={() => setIsOpenDelete(false)}
-                                data={selectedInstal!}
+                            />
+                        )
+                    }
+
+                    {
+                        isOpenDetails && selectDetails && (
+                            <ShowDetails
+                                open={isOpenDetails}
+                                onClose={() => setIsOpenDetails(false)}
+                                data={selectDetails}
                             />
                         )
                     }

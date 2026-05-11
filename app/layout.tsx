@@ -13,12 +13,9 @@ export default async function Layout({
   } = await supabase.auth.getSession();
 
   if (!session) {
-    // Unauthenticated: render content without the admin panel/sidebar
     return children;
   }
 
-  // Authenticated: wrap content with admin panel layout
-  // envolviendo el contenido con el layout del panel de administración 
   return (
     <html lang="es">
       <body>

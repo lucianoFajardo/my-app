@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Tag,
   Users,
-  Settings,
   LayoutGrid,
   LucideIcon,
   User,
-  PencilRulerIcon
+  PencilRulerIcon,
+  ToolCase
 } from "lucide-react";
 
 type Submenu = {
@@ -27,7 +27,7 @@ type Group = {
   menus: Menu[];
 };
 
-export function getMenuList(): Group[] {
+export function getMenuList(pathname: string): Group[] {
   return [
     {
       groupLabel: "",
@@ -78,9 +78,15 @@ export function getMenuList(): Group[] {
           ]
         },
         {
-          href: "/tags",
-          label: "Tags",
-          icon: Tag
+          href: "/repairs",
+          label: "Arreglos",
+          icon: ToolCase,
+          submenus: [
+            {
+              href: "/pages/scheduler/repairs/form",
+              label: "Nuevo Arreglo"
+            }
+          ]
         }
       ]
     },
@@ -92,11 +98,11 @@ export function getMenuList(): Group[] {
           label: "Usuarios",
           icon: Users
         },
-        {
-          href: "/account/edit",
-          label: "Ajustes de Cuenta",
-          icon: Settings
-        }
+        // {
+        //   href: "/account/edit",
+        //   label: "Ajustes de Cuenta",
+        //   icon: Settings
+        // }
       ]
     }
   ];

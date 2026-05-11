@@ -91,6 +91,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
             onClose(); // Cerramos el diálogo al éxito
         } catch (error) {
             // Implementar notificación de error aquí
+            throw new Error(`Error al procesar el pago. Por favor, intenta nuevamente. ${error}`);
         } finally {
             setLoading(false);
         }

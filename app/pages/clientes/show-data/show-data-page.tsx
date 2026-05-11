@@ -8,11 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import {
     User,
-    Mail,
     Phone,
     Wifi,
     MapPin,
-    CalendarDays,
     CreditCard,
     FileText,
     Info,
