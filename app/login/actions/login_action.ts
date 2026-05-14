@@ -5,16 +5,19 @@ import { redirect } from 'next/navigation'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
-    //TODO: Agregar manejo de errors , validacion , verificar vulnerabilidades
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
+    try {
+        const data = {
+            email: formData.get('email') as string,
+            password: formData.get('password') as string,
+        }
+        const { error } = await supabase.auth.signInWithPassword(data)
+        if (error) {
+            redirect('/error')
+        }
+        revalidatePath('/', 'layout')
+        redirect('/dashboard')
+    } catch (error) {
+        throw error
     }
-    const { error } = await supabase.auth.signInWithPassword(data)
-    if (error) {
-        redirect('/error')
-    }
-    revalidatePath('/', 'layout')
-    redirect('/dashboard')
 }
 
