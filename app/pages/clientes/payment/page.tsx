@@ -1,8 +1,8 @@
 "use client"
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Check, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Eye, Check, ChevronLeft, ChevronRight, Search, CreditCard, User, AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { ClientPaymentInfo } from "../models/client-model";
 import { DataClientPaymentInfo } from "../actions/read-client-data-action";
@@ -12,16 +12,14 @@ import { Payment } from "../models/payment-model";
 import deleteDialogPaymentAction from "../actions/payment-delete-action";
 import { getMonthsDue, getPlanStatus } from "../actions/status-plan-action";
 import { DialogPayment } from "./dialog-payment";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 import { DateRange } from "react-day-picker";
 
 // Normaliza una fecha (string o Date) a un string 'YYYY-MM-DD'
 const normalizeDateStr = (d: string | Date): string => {
-    // Crea un objeto Date, manejando strings o Dates
     const date = typeof d === 'string' ? new Date(d) : d;
-    // Usa los componentes de la fecha en UTC para evitar problemas de zona horaria
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');
@@ -41,24 +39,19 @@ export default function PaymentPageClient() {
     const [showPaymentsOpen, setShowPaymentsOpen] = useState(false);
     const [selectedPayments, setSelectedPayments] = useState<Payment[]>([]);
     const [selectedCliente, setSelectedCliente] = useState<ClientPaymentInfo | undefined>();
-    // parametros para la busqueda y filtrado de datos
     const [searchParam, setSearchParam] = useState<string | undefined>("");
-    // Paginación de la tabla de pagos de clientes
     const [page, setPage] = useState(0);
     const itemsPerPage = 30;
-    // Aplicando filtro para poder filtraro los datos por fechas y rangos de pagos
     const [showDebtorsOnly, setShowDebtorsOnly] = useState(false);
 
-    // Carga inicial de datos
     useEffect(() => {
         const fetchData = async () => {
             const from = page * itemsPerPage;
             const to = from + itemsPerPage - 1;
             const rawData = await DataClientPaymentInfo({ from, to, searchParam });
             const processedData = rawData.map(client => {
-                // Usamos la función para limpiar los datos que vienen de la BD
                 const safePaidMonths = normalizePaidMonths(client.paidMonths);
-                const dueMonths = getMonthsDue(client.initialPayment, safePaidMonths);
+                const dueMonths = getMonthsDue(client.initial_payment, safePaidMonths);
                 const planStatus = getPlanStatus(dueMonths);
                 return {
                     ...client,
@@ -69,14 +62,12 @@ export default function PaymentPageClient() {
             });
             setClientInfo(processedData);
         };
-        // un delay para evitar llamadas excesivas al cambiar de página rápidamente
         const timeoutId = setTimeout(() => {
             fetchData();
         }, 300);
         return () => clearTimeout(timeoutId);
     }, [page, searchParam]);
 
-    // Función para verificar si una fecha está dentro del rango seleccionado sino debe de pagar
     const isDateInRange = (d: string | Date, range?: DateRange) => {
         if (!range?.from) return true;
         const date = typeof d === "string" ? new Date(d) : d;
@@ -88,16 +79,15 @@ export default function PaymentPageClient() {
         return date >= from && date <= to;
     };
 
-    // Lista derivada con filtros aplicados
     const displayedClients = clientInfo.filter(c => {
         const debtorOk = !showDebtorsOnly || c.planStatus !== "paid";
-        const dateOk = isDateInRange(c.initialPayment, );
+        const dateOk = isDateInRange(c.initial_payment, ); // TODO: Revisa tu variable de rango
         return debtorOk && dateOk;
     });
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchParam(e.target.value);
-        setPage(0); // Reiniciar a la primera página al buscar
+        setPage(0);
     }
 
     const handleOpenDialog = (client: ClientPaymentInfo) => {
@@ -113,7 +103,6 @@ export default function PaymentPageClient() {
     };
 
     const handleClosePayments = () => {
-        // Cerra el dialogo y limpiar los datos.
         setShowPaymentsOpen(false);
         setSelectedPayments([]);
         setSelectedCliente(undefined);
@@ -126,17 +115,12 @@ export default function PaymentPageClient() {
         );
     };
 
-
     const handlePaySuccess = useCallback(async (client: ClientPaymentInfo, paidMonthDates: string[]) => {
-        console.log(`Pago registrado localmente para los meses:`, paidMonthDates);
-        // Actualizamos la lista general de clientes (Tabla)
         setClientInfo(prevClients => prevClients.map(c => {
             if (c.id_client === client.id_client) {
-                // Unimos los meses que ya estaban pagados con los nuevos que se acaban de pagar
                 const combinedPaidMonths = [...(c.paidMonths || []), ...paidMonthDates];
-                // Normalizamos la lista para aplanar, formatear y eliminar duplicados
                 const newPaidMonths = normalizePaidMonths(combinedPaidMonths);
-                const newDueMonths = getMonthsDue(c.initialPayment, newPaidMonths);
+                const newDueMonths = getMonthsDue(c.initial_payment, newPaidMonths);
                 const newStatus = getPlanStatus(newDueMonths);
                 return {
                     ...c,
@@ -152,7 +136,7 @@ export default function PaymentPageClient() {
             if (!prevSelected || prevSelected.id_client !== client.id_client) return prevSelected;
             const combinedPaidMonths = [...(prevSelected.paidMonths || []), ...paidMonthDates];
             const newPaidMonths = normalizePaidMonths(combinedPaidMonths);
-            const newDueMonths = getMonthsDue(prevSelected.initialPayment, newPaidMonths);
+            const newDueMonths = getMonthsDue(prevSelected.initial_payment, newPaidMonths);
             const newStatus = getPlanStatus(newDueMonths);
             return {
                 ...prevSelected,
@@ -163,131 +147,147 @@ export default function PaymentPageClient() {
         });
     }, []);
 
-    const handleNextPage = () => {
-        setPage(prevPage => prevPage + 1);
-    }
-
-    const handelePreviousPage = () => {
-        setPage(page > 0 ? page - 1 : 0)
-    }
+    const handleNextPage = () => setPage(prev => prev + 1);
+    const handelePreviousPage = () => setPage(page > 0 ? page - 1 : 0);
 
     return (
-        <div className="mt-8 w-full p-2 mx-auto">
-            <Card className="shadow-xl border border-primary-100">
-                <CardHeader className="bg-primary-50 rounded-t-xl shadow-sm">
-                    <CardTitle className="text-2xl text-primary-700">Gestion de Pagos</CardTitle>
-                    <CardDescription className="text-primary-500">
-                        Gestión de pagos y estados de los clientes.
-                    </CardDescription>
-                    <CardAction>
+        <div className="container mx-auto py-6 px-4 md:px-0">
+            <Card className="w-full mx-auto border-border bg-card shadow-sm rounded-xl overflow-hidden">
+                
+                {/* Cabecera / Filtros */}
+                <CardHeader className="bg-muted/30 pb-6 pt-5 border-b">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                <CreditCard className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl font-bold tracking-tight">Gestión de Pagos</CardTitle>
+                                <CardDescription className="text-muted-foreground mt-0.5 text-sm">
+                                    Controla los pagos, vencimientos y estados de los clientes.
+                                </CardDescription>
+                            </div>
+                        </div>
                         <div className="flex items-center gap-3 flex-wrap">
                             <Button
-                                variant={showDebtorsOnly ? "default" : "outline"}
+                                variant={showDebtorsOnly ? "destructive" : "outline"}
                                 onClick={() => setShowDebtorsOnly(prev => !prev)}
-                                className={showDebtorsOnly ? "bg-red-600 text-white" : "bg-blue-700 text-white hover:bg-blue-500 hover:text-white"}
+                                className={cn("h-9 text-sm shadow-sm", showDebtorsOnly ? "" : "text-muted-foreground")}
                             >
-                                Solo deudores
+                                <AlertCircle className="mr-2 h-4 w-4" />
+                                {showDebtorsOnly ? "Mostrando deudores" : "Filtrar deudores"}
                             </Button>
-                            <div className="relative w-72">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
+                            <div className="relative w-full sm:w-64 md:w-72">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Buscar cliente..."
                                     value={searchParam}
                                     onChange={handleSearch}
-                                    className="pl-8 bg-white border-primary-200 focus-visible:ring-primary-500"
+                                    className="pl-9 bg-background h-9 text-sm border-border/60 focus-visible:ring-primary/20 shadow-sm"
                                 />
                             </div>
                         </div>
-                    </CardAction>
+                    </div>
                 </CardHeader>
-                <CardContent className="overflow-x-auto p-0">
+
+                {/* Tabla */}
+                <CardContent className="p-0">
                     <div className="max-h-[60vh] overflow-y-auto">
-                        <Table className="rounded-xl bg-white shadow-lg border border-primary-100">
-                            <TableHeader className="bg-primary-100 sticky top-0 z-10">
-                                <TableRow>
-                                    <TableHead className="text-primary-700 font-bold">Nombre</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Antena</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Plan</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Instalación</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Fechas de pago</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Estado</TableHead>
-                                    <TableHead className="text-primary-700 font-bold text-center">Acciones</TableHead>
+                        <Table className="w-full">
+                            <TableHeader className="bg-muted/40 sticky top-0 z-10 hidden sm:table-header-group">
+                                <TableRow className="border-b border-border/60 hover:bg-transparent">
+                                    <TableHead className="font-semibold text-foreground h-11">Nombre</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11">Antena</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11">Plan</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11">Instalación</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11">Fechas de pago</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11 text-center">Estado</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11 text-center">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {displayedClients.map((cliente) => {
-                                    return (
-                                        <TableRow key={cliente.id_client} className="hover:bg-primary-50">
-                                            <TableCell>{cliente.name} {cliente.lastname}</TableCell>
-                                            <TableCell>{cliente.antennaName}</TableCell>
-                                            <TableCell>$ {cliente.plan}</TableCell>
-                                            <TableCell>
-                                                {new Date(cliente.initialPayment).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {cliente.range_payment}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cliente.planStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {cliente.planStatus === 'paid' ? 'Al día' : `Debe ${cliente.monthsDue.length ? cliente.monthsDue.length : 0} mes(es)`}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-center flex justify-center gap-2">
-                                                <Button
-                                                    onClick={() => handleOpenDialog(cliente)}
-                                                    size="sm"
-                                                    className="bg-primary-600 text-red hover:bg-primary-700"
-                                                >
-                                                    <Check className="w-4 h-4 mr-1" /> Pagar
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleShowPayments(cliente)}
-                                                    variant="outline"
-                                                    size="sm"
-                                                >
-                                                    <Eye className="w-4 h-4 mr-1" /> Ver
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
+                                {displayedClients.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                            No se encontraron clientes.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {displayedClients.map((cliente) => (
+                                    <TableRow key={cliente.id_client} className="hover:bg-muted/30 border-b border-border/60 transition-colors">
+                                        <TableCell className="font-medium text-sm text-foreground">
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4 text-muted-foreground hidden sm:block" />
+                                                <span>{cliente.name} {cliente.lastname}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-sm text-muted-foreground">{cliente.antenna_name}</TableCell>
+                                        <TableCell className="text-sm font-semibold">${cliente.plan}</TableCell>
+                                        <TableCell className="text-sm text-muted-foreground">
+                                            {new Date(cliente.initial_payment).toLocaleDateString()}
+                                        </TableCell>
+                                        <TableCell className="text-sm font-medium">{cliente.range_payment}</TableCell>
+                                        <TableCell className="text-center">
+                                            <span className={cn(
+                                                "px-2.5 py-1 rounded-md text-[11px] font-semibold border",
+                                                cliente.planStatus === 'paid' 
+                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                                                : "bg-destructive/10 text-destructive border-destructive/20"
+                                            )}>
+                                                {cliente.planStatus === 'paid' ? 'Al día' : `Debe ${cliente.monthsDue.length || 0} mes(es)`}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-center flex items-center justify-center gap-2">
+                                            <Button
+                                                onClick={() => handleOpenDialog(cliente)}
+                                                size="sm"
+                                                className="h-8 text-xs shadow-sm bg-primary hover:bg-primary/90"
+                                            >
+                                                <Check className="w-3.5 h-3.5 mr-1.5" /> Pagar
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleShowPayments(cliente)}
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 text-xs border-border/80"
+                                            >
+                                                <Eye className="w-3.5 h-3.5 mr-1.5" /> Ver
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                             </TableBody>
                         </Table>
                     </div>
-                    <Separator className="my-5" />
-                    <CardFooter >
-                        <CardAction>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-primary-700 font-medium">
-                                    Página Actual {page + 1}
-                                </span>
-                                <div className="flex items-center bg-white rounded-md border border-primary-200 shadow-sm m-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handelePreviousPage}
-                                        disabled={page === 0}
-                                        className="h-8 w-8 rounded-r-none hover:bg-primary-50"
-                                    >
-                                        <ChevronLeft className="w-4 h-4 text-primary-700" />
-                                    </Button>
-                                    <div className="w-4 h-4 bg-primary-200"></div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleNextPage}
-                                        // Deshabilitar si la respuesta trajo menos datos que el tamaño de página (fin de la lista)
-                                        disabled={clientInfo.length < (itemsPerPage * (page + 1))}
-                                        className="h-8 w-8 rounded-l-none hover:bg-primary-50"
-                                    >
-                                        <ChevronRight className="w-4 h-4 text-primary-700" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardAction>
-                    </CardFooter>
                 </CardContent>
+
+                {/* Footer Paginación */}
+                <CardFooter className="py-4 px-6 bg-muted/20 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span className="text-sm text-muted-foreground font-medium">
+                        Página Actual {page + 1}
+                    </span>
+                    <div className="flex items-center gap-1 bg-background rounded-md border shadow-sm">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handelePreviousPage}
+                            disabled={page === 0}
+                            className="h-8 w-8 rounded-r-none hover:bg-muted"
+                        >
+                            <ChevronLeft className="w-4 h-4 text-foreground" />
+                        </Button>
+                        <div className="w-1px h-4 bg-border"></div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleNextPage}
+                            disabled={clientInfo.length < (itemsPerPage * (page + 1))}
+                            className="h-8 w-8 rounded-l-none hover:bg-muted"
+                        >
+                            <ChevronRight className="w-4 h-4 text-foreground" />
+                        </Button>
+                    </div>
+                </CardFooter>
             </Card>
 
             {open && selectedCliente && (

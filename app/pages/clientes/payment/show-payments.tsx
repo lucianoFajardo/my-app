@@ -21,9 +21,9 @@ export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }:
                 <DialogDescription className="text-sm">
                     Revisa el historial de pagos realizados por el cliente.
                     <ul>
-                        <li>- Nombre antena: {data.antennaName}.</li>
+                        <li>- Nombre antena: {data.antenna_name}.</li>
                         <li>- Plan contratado: ${data.plan}.</li>
-                        <li>- Fecha de inicio de pagos: {new Date(data.initialPayment).toLocaleDateString()}.</li>
+                        <li>- Fecha de inicio de pagos: {new Date(data.initial_payment).toLocaleDateString()}.</li>
                     </ul>
                 </DialogDescription>
                 <div className="space-y-2 mt-4">

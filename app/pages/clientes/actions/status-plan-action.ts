@@ -87,3 +87,45 @@ export const getDetailedCurrentMonthStatus = (paymentDate: string | Date, paidMo
     return { status: 'upcoming', message: 'Pago al día. Próximo vencimiento el ' + dueDateString };
 };
 
+export type MonthStatus = 'paid' | 'overdue' | 'future' | 'current';
+
+export interface PaymentMonth {
+    date: string;       // 'YYYY-MM-DD'
+    name: string;       // e.g. 'Octubre 2023'
+    status: MonthStatus;
+}
+
+export const getAllPaymentMonths = (initialPaymentStr: string, paidMonthsStrs: string[]): PaymentMonth[] => {
+    const months: PaymentMonth[] = [];
+    const startDate = new Date(initialPaymentStr);
+    const currentDate = new Date();
+
+    // Generar, por ejemplo, hasta 6 meses en el futuro desde hoy
+    const endDate = new Date();
+    endDate.setMonth(currentDate.getMonth() + 6);
+
+    const tempDate = new Date(startDate);
+
+    while (tempDate <= endDate) {
+        const dateStr = tempDate.toISOString().split('T')[0];
+        const isPaid = paidMonthsStrs.includes(dateStr);
+
+        let status: MonthStatus = 'future';
+        if (isPaid) {
+            status = 'paid';
+        } else if (tempDate < currentDate && tempDate.getMonth() !== currentDate.getMonth()) {
+            status = 'overdue';
+        } else if (tempDate.getMonth() === currentDate.getMonth() && tempDate.getFullYear() === currentDate.getFullYear()) {
+            status = 'current';
+        }
+
+        months.push({
+            date: dateStr,
+            name: new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(tempDate),
+            status
+        });
+
+        tempDate.setMonth(tempDate.getMonth() + 1);
+    }
+    return months;
+}
