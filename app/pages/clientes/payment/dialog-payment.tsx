@@ -17,31 +17,25 @@ type DialogPaymentProps = {
     onPaySuccess: (client: ClientPaymentInfo, paidMonthDates: string[]) => void;
 };
 
-//TODO - modifique supabase , modelos en vs y revisar todo con el tema de los pagos 19-5-26
 export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPaymentProps) {
     const [loading, setLoading] = useState(false);
     const [selectedDates, setSelectedDates] = useState<string[]>([]);
-
-    // Estado para controlar qué acordeón está abierto por defecto
+    //* --> Estado para controlar qué acordeón está abierto por defecto
     const [openSections, setOpenSections] = useState({
         overdue: true,
         future: false,
         paid: false
     });
-
+    //* --> Memoización de los meses con su estado para evitar cálculos innecesarios en cada render
     const allMonths = useMemo(() => {
         if (!data) return [];
-        return getAllPaymentMonths(data.initial_payment, data.paidMonths || []);
+        return getAllPaymentMonths(data.initial_payment, data.paid_until_date || data.initial_payment);
     }, [data]);
-
     if (!data) return null;
-
-    // Agrupación (pronto esto vendrá directo de Supabase)
     const paidMonths = allMonths.filter(m => m.status === 'paid');
     const overdueMonths = allMonths.filter(m => m.status === 'overdue');
     const futureMonths = allMonths.filter(m => m.status === 'future' || m.status === 'current');
-
-    const totalToPay = selectedDates.length * Number(data.plan);
+    const totalToPay = selectedDates.length * Number(data.plan); //* --> Calcular el total a pagar y lo multiplicamos por el total del plan que tiene el cliente
     const isPayButtonDisabled = loading || selectedDates.length === 0;
 
     const toggleSelection = (monthDate: string) => {
@@ -52,7 +46,6 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
             return [...prev, monthDate].sort();
         });
     };
-
     const handlePaySelected = async () => {
         if (isPayButtonDisabled) return;
         setLoading(true);
@@ -61,9 +54,15 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
             const lastPaidMonthDate = new Date(lastMonth);
             lastPaidMonthDate.setMonth(lastPaidMonthDate.getMonth() + 1);
             const newPaidUntilDate = lastPaidMonthDate.toISOString().split('T')[0];
-
-            await paymentDataClientAction(data, selectedDates, newPaidUntilDate, totalToPay);
-            onPaySuccess(data, selectedDates);
+            console.log('nueva fecha de pago ' , newPaidUntilDate);
+            //* --> Procesamos el pago del cliente
+            await paymentDataClientAction(data, selectedDates, newPaidUntilDate, totalToPay); //*--> Procesamos los pagos y actualizamos la fecha hasta la que el cliente está pagado (*).(*)
+            //* --> Estado nuevo del cliente con las fechas actualizadas despues de realizar el pago
+            const updatedClient: ClientPaymentInfo = {
+                ...data,
+                paid_until_date: newPaidUntilDate
+            };
+            onPaySuccess(updatedClient, selectedDates);
             setSelectedDates([]);
             onClose();
         } catch (error) {

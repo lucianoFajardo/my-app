@@ -11,7 +11,6 @@ import { CardEditCliente } from "./dialog-edit";
 import { DialogDeleteCliente } from "../delete/dialog-delete";
 import ShowDataPageClient from "../show-data/show-data-page";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 
 export default function EditDateClientPage() {
     const [dataClient, setDataClient] = useState<ClienteModel[]>([]);

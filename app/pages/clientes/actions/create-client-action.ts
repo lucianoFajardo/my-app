@@ -46,7 +46,8 @@ export async function createClientNetworkAction(promp: ClienteModel) {
                 payment: paymentData
             }
         };
-    } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) {
         return { success: false, error: "Ocurrió un error inesperado en el servidor." };
     }
 }

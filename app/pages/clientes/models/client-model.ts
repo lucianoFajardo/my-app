@@ -29,7 +29,6 @@ export interface DueMonth {
     date: string;
 }
 
-
 // ->> TODO : modificar esta tabla tambien por que tambien se modificaron unos campos en la tabla
 export type ClientPaymentInfo = {
     readonly id_client: string
