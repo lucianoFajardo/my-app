@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import path from 'path'
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -26,7 +25,6 @@ export async function updateSession(request: NextRequest) {
             },
         }
     )
-    //TODO : cambie las API KEY para saber si eso era el error
 
     const {
         data: { user },

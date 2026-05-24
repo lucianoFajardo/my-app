@@ -43,7 +43,7 @@ export const DialogDeleteCliente = ({ cliente, onCancel, isOpen, onSubmit }: Cli
                     <DialogDescription className="text-center text-base text-gray-600">
                         Esta acción no se puede deshacer.<br />
                         ¿Estás seguro de que deseas eliminar a <span className="font-semibold text-red-700">{cliente.name},
-                        </span> con direccion registrada : <span className="font-semibold text-red-700">{cliente.antennaName}</span>,
+                        </span> con direccion registrada : <span className="font-semibold text-red-700">{cliente.antenna_name}</span>,
                         una vez los datos se eliminen se perdera registro de este cliente.
                     </DialogDescription>
                 </DialogHeader>

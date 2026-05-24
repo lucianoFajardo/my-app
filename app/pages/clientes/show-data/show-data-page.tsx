@@ -2,9 +2,6 @@
 
 import { ClienteModel } from "../models/client-model"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import {
     User,
@@ -12,10 +9,11 @@ import {
     Wifi,
     MapPin,
     CreditCard,
-    FileText,
     Info,
-    Globe2,
-    Calendar
+    Calendar,
+    StickyNote,
+    MonitorSmartphone,
+    Building2,
 } from "lucide-react"
 import {
     Map,
@@ -24,6 +22,7 @@ import {
     MapTileLayer,
     MapZoomControl,
 } from "@/components/ui/map"
+import { DialogDescription } from "@radix-ui/react-dialog"
 
 interface ShowDataPageProps {
     props: ClienteModel
@@ -31,118 +30,125 @@ interface ShowDataPageProps {
     isOpen: boolean
 }
 
-export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataPageProps) {
+// Componente helper para dibujar filas de datos limpias
+const DataRow = ({ icon: Icon, label, value, highlight = false }: { icon: React.ElementType, label: string, value: React.ReactNode, highlight?: boolean }) => (
+    <div className="flex items-center justify-between py-3 border-b border-border/40 last:border-0">
+        <div className="flex items-center gap-3 text-muted-foreground">
+            <Icon className="w-4 h-4" />
+            <span className="text-sm">{label}</span>
+        </div>
+        <div className={`text-sm font-medium text-right ${highlight ? 'text-primary' : 'text-foreground'}`}>
+            {value || <span className="text-muted-foreground italic">No registrado</span>}
+        </div>
+    </div>
+)
 
+export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataPageProps) {
     const latitude = parseFloat(props.latitude);
     const longitude = parseFloat(props.longitude);
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl mx-auto rounded-xl shadow-2xl bg-white p-6 border border-primary-100">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-primary-700 flex items-center gap-2 mb-2">
-                        <Info className="w-6 h-6 text-primary-500" />
-                        Información del Cliente
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="max-h-[70vh] overflow-y-auto">
-                    <Card className="mb-4 shadow border border-primary-100">
-                        <CardHeader>
-                            <CardTitle className="text-lg text-primary-700 flex items-center gap-2">
-                                <User className="w-5 h-5 text-primary-500" />
+            <DialogContent className="max-w-4xl p-0 mx-auto rounded-xl shadow-xl bg-card border-border/60 overflow-hidden">
+                
+                {/* Header */}
+                <DialogHeader className="bg-muted/30 px-6 py-5 border-b">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                            <User className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
                                 {props.name} {props.lastname}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <Phone className="w-4 h-4 text-green-500" /> Teléfono 1
-                                        </TableCell>
-                                        <TableCell>{props.phone1}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <Phone className="w-4 h-4 text-green-400" /> Teléfono 2
-                                        </TableCell>
-                                        <TableCell>{props.phone2}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <Wifi className="w-4 h-4 text-purple-500" /> Antena
-                                        </TableCell>
-                                        <TableCell>{props.antennaName}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <MapPin className="w-4 h-4 text-orange-500" /> Sector
-                                        </TableCell>
-                                        <TableCell>{props.sector}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <FileText className="w-4 h-4 text-primary-500" /> Plan
-                                        </TableCell>
-                                        <TableCell>{props.plan}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <Calendar className="w-4 h-4 text-pink-500" /> rango de fechas
-                                        </TableCell>
-                                        <TableCell>{props.range_payment}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <CreditCard className="w-4 h-4 text-yellow-500" /> Método de Pago
-                                        </TableCell>
-                                        <TableCell>{props.paymentMethod}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <Globe2 className="w-4 h-4 text-blue-500" /> Latitud
-                                        </TableCell>
-                                        <TableCell>{props.latitude}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <Globe2 className="w-4 h-4 text-blue-400" /> Longitud
-                                        </TableCell>
-                                        <TableCell>{props.longitude}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="flex items-center gap-2 font-medium text-primary-700">
-                                            <FileText className="w-4 h-4 text-primary-500" /> Observaciones
-                                        </TableCell>
-                                        <TableCell>{props.observations}</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                            {/* Espacio para el mapa */}
-                            <div className="mt-6">
-                                <Label className="text-primary-700 flex items-center gap-2 mb-2">
-                                    <MapPin className="w-5 h-5 text-orange-500" />
-                                    Ubicación en el mapa
-                                </Label>
-                                <div className="w-full  rounded-lg border border-primary-100 bg-primary-50 flex items-center justify-center">
-                                    {/* Aquí puedes agregar tu componente de mapa */}
-                                    <span className="w-full h-full">
-                                        <Map center={[latitude, longitude]} zoom={12}>
-                                            <MapTileLayer />
-                                            <MapZoomControl />
-                                            <MapMarker position={[latitude, longitude]}>
-                                                <MapPopup>A map component for shadcn/ui.</MapPopup>
-                                            </MapMarker>
-                                        </Map>
+                            </DialogTitle>
+                            <DialogDescription className="text-sm text-muted-foreground mt-1">
+                                Información detallada del cliente e instalación.
+                            </DialogDescription>
+                        </div>
+                    </div>
+                </DialogHeader>
+
+                <div className="flex flex-col md:flex-row h-full max-h-[70vh]">
+                    {/* Columna Izquierda: Lista de Datos */}
+                    <div className="w-full md:w-[45%] flex flex-col border-r border-border/60 overflow-y-auto">
+                        <div className="p-6">
+                            
+                            <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                                <Info className="w-3.5 h-3.5" /> General & Contacto
+                            </h4>
+                            <div className="bg-muted/10 rounded-lg p-2 mb-6">
+                                <DataRow icon={Phone} label="Teléfono 1" value={props.phone1} />
+                                <DataRow icon={Phone} label="Teléfono 2" value={props.phone2} />
+                            </div>
+
+                            <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                                <MonitorSmartphone className="w-3.5 h-3.5" /> Servicio Contratado
+                            </h4>
+                            <div className="bg-muted/10 rounded-lg p-2 mb-6">
+                                <DataRow icon={Wifi} label="Antena" value={props.antenna_name} />
+                                <DataRow icon={Building2} label="Sector" value={props.sector} />
+                                <DataRow icon={MonitorSmartphone} label="Plan Mensual" value={`$${props.plan}`} highlight />
+                            </div>
+
+                            <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                                <CreditCard className="w-3.5 h-3.5" /> Facturación
+                            </h4>
+                            <div className="bg-muted/10 rounded-lg p-2">
+                                <DataRow icon={Calendar} label="Días de Pago" value={props.range_payment} />
+                                <DataRow icon={CreditCard} label="Método" value={<span className="capitalize">{props.payment_method}</span>} />
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* Columna Derecha: Mapa y Notas */}
+                    <div className="w-full md:w-[55%] flex flex-col bg-muted/5 overflow-y-auto">
+                        <div className="p-6 space-y-6">
+                            
+                            {/* Notas (Solo si existen) */}
+                            {props.observations && (
+                                <div>
+                                    <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                                        <StickyNote className="w-3.5 h-3.5" /> Observaciones
+                                    </h4>
+                                    <div className="text-sm text-foreground bg-background p-4 rounded-lg border shadow-sm leading-relaxed">
+                                        {props.observations}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Mapa */}
+                            <div>
+                                <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex flex-wrap items-center justify-between gap-2">
+                                    <span className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Ubicación</span>
+                                    <span className="font-mono text-[10px] lowercase text-muted-foreground/80">
+                                        L: {props.latitude}, l: {props.longitude}
                                     </span>
+                                </h4>
+                                <div className="w-full h-320px rounded-lg border border-border/80 bg-background overflow-hidden relative shadow-sm">
+                                    <Map center={[latitude, longitude]} zoom={13}>
+                                        <MapTileLayer />
+                                        <MapZoomControl />
+                                        <MapMarker position={[latitude, longitude]}>
+                                            <MapPopup>
+                                                <div className="text-xs">
+                                                    <strong>{props.name} {props.lastname}</strong><br/>
+                                                    {props.antenna_name}
+                                                </div>
+                                            </MapPopup>
+                                        </MapMarker>
+                                    </Map>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+
+                        </div>
+                    </div>
                 </div>
-                <DialogFooter className="flex justify-end mt-4">
-                    <Button variant="outline" onClick={onClose}>
-                        Cerrar
+
+                {/* Footer estético */}
+                <DialogFooter className="bg-muted/30 border-t px-6 py-4 flex items-center justify-end">
+                    <Button variant="outline" onClick={onClose} className="shadow-sm border-border/80">
+                        Cerrar Detalles
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My App
 
-## Getting Started
+## 📋 Descripción del Proyecto
 
-First, run the development server:
+ESTE PROYECTO BUSCA SOLUCIONAR Y SATISFACER LA NECESIDAD DE UNA EMPRESA LOCAL DE MANTENER UN SERVICIO ORDENADO Y ACTUALIZADO
+DEL ESTADO DE SU EMPRESA POR ESO NACE GYGDASBOARD
+---
+
+## 🚀 Características Principales
+
+- CRM PARA EL ORDEN Y ESTRUCTURACION DE UNA EMPRESA
+- PAGOS , REGISTROS, MODIFICACIONES
+- METODO CENTRALIZADO Y OPTIMIZADO DE DATOS
+
+---
+
+## 📦 Versiones
+
+### v1.0.0 - [25-05-26]
+
+- Descripción de cambios principales
+- CAMBIOS VISUALES , REGISTROS DE CLIENTES Y PAGOS ACTUALIZADOS
+- EDITAR CLIENTES , VISUALIZAR INFORMACION MAS RELEVANTE EN EL DASHBOARD
+- PAGOS DE LOS CLIENTES Y LA EDICION DE LOS DATOS DE LOS CLIENTES CORREGIDA
+
+---
+
+## 🔧 Mejoras y Avances
+
+### Avances Recientes
+
+- [Avance 1] - EDICION DE DATOS DE CLIENTES.
+- [Avance 2] - EDICION DE LOS PAGOS QUE SE REGISTRAN A NOMBRE DE UN CLIENTE.
+- [Avance 3] - VISUALIZAR DATA DE INSTALACIONES PENDIENTES.
+
+### Mejoras Implementadas
+
+- ✅ OPTIMIZACION DE RENDIMIENTO
+- ✅ INTERFAZ MEJORADA
+- ✅ MEJOR DOCUMENTACION Y MAS ESTRUCTURADA
+- ✅ MEJORA DE OPTIMIZACION DE RECURSOS
+
+### En Desarrollo
+
+- 🔄 NUEVA FUNCIONALIDAD -> EDITAR DATOS DE CUENTAS PROPIAS DE USUARIOS
+- 🔄 NUEVA FUNCIONALIDAD -> CREAR REGISTRO DE RETIRO DE CLIENTES
+- 🔄 NUEVA FUNCIONALIDAD -> EDITAR FECHAS DE PAGOS Y MESES DE LOS CLIENTES YA CREADOS
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+- Node.js / React / Ts
+- Base de datos: [Supabase]
+- Herramientas: [shadCn , ts , lucideicon]
+
+---
+
+## 📋 Requisitos
+
+- Node.js v20+
+- npm
+
+---
+
+## 🚀 Instalación y Uso
 
 ```bash
+# Clonar el repositorio
+git clone https://github.com/lucianoFajardo/my-app.git
+
+# Instalar dependencias
+npm install
+
+# Ejecutar en desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build para producción
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📝 Cambios Próximos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Mejora en seguridad
+- Nuevas integraciones
+- Optimización de base de datos
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 👨‍💻 Autor
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Luciano Fajardo**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📄 Licencia
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[Especificar licencia - MIT, Apache, etc.]
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📞 Contacto
+
+Para más información o reportar bugs, contactar a: [l.eduardof1420@gmail.com]

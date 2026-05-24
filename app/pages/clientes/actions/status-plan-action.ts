@@ -1,89 +1,85 @@
-import { DetailedStatus, PaymentStatus } from "../models/client-model";
+export type MonthStatus = 'paid' | 'overdue' | 'future' | 'current';
 
-// Definimos la estructura para cumplir con el tipo 'DueMonth' que pide el error
-interface DueMonth {
-    name: string;
-    date: string;
+export interface PaymentMonth {
+    id: string;
+    date: string;       // 'YYYY-MM-DD'
+    name: string;      
+    status: MonthStatus;
 }
 
-// Calcula los meses que se deben
-export const getMonthsDue = (paymentDate: Date, paidMonths: string[] = []): DueMonth[] => {
-    const today = new Date();
-    const startDate = new Date(paymentDate);
-    // Ajustamos al final del día para evitar problemas de zona horaria
-    today.setHours(0, 0, 0, 0);
-    const dueDates: DueMonth[] = [];
+export const getAllPaymentMonths = (
+    dayStaticPay: string,    // -->Ej: "2026-05-15"
+    coveredUpToStr: string   // -->Ej: "2026-06-15"
+): PaymentMonth[] => {
+    const months: PaymentMonth[] = [];
 
-    // Parseamos la fecha de instalación (asumiendo YYYY-MM-DD)
-    const [year, month, day] = [startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()];
-    // Empezamos a iterar desde la fecha de instalación
-    // eslint-disable-next-line prefer-const
-    let currentCheckDate = new Date(year, month - 1, day);
-    // Mientras la fecha a chequear sea menor o igual a hoy
-    while (currentCheckDate <= today) {
-        // Formato YYYY-MM-DD para comparar con lo que viene de la BD
-        const dateString = currentCheckDate.toISOString().split('T')[0];
-        // Lógica de Gracia: 5 días
-        const gracePeriodLimit = new Date(currentCheckDate);
-        gracePeriodLimit.setDate(gracePeriodLimit.getDate() + 5);
-        // Si NO está pagado
-        if (!paidMonths.includes(dateString)) {
-            // Y ya pasó la fecha de gracia
-            if (today > gracePeriodLimit) {
-                const monthName = currentCheckDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
-                dueDates.push({
-                    date: dateString,
-                    name: `Mes de ${monthName}`
-                });
+    const [startYear, startMonth, startDay] = dayStaticPay.split('-').map(Number);
+    const [covYear, covMonth] = coveredUpToStr.split('-').map(Number);
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+
+    const coveredYm = covYear * 100 + covMonth;
+    const currentYm = currentYear * 100 + currentMonth;
+
+    let iterYear = startYear;
+    let iterMonth = startMonth;
+
+    // --> Límite: Mostrar hasta 6 meses a futuro desde el mes actual
+    let limitMonth = currentMonth + 6;
+    let limitYear = currentYear;
+    if (limitMonth > 12) {
+        limitYear += Math.floor((limitMonth - 1) / 12);
+        limitMonth = (limitMonth % 12) || 12;
+    }
+    const limitYm = limitYear * 100 + limitMonth;
+
+    const formatter = new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' });
+
+    while (iterYear * 100 + iterMonth <= limitYm) {
+        const tempYm = iterYear * 100 + iterMonth;
+        let status: MonthStatus = 'future';
+        // --- NUEVA LÓGICA DE ESTADOS CORREGIDA ---
+        if (tempYm < coveredYm) {
+            // A. Si el mes es estrictamente MENOR al mes de vencimiento -> Ya está pagado
+            status = 'paid';
+        } else if (tempYm === coveredYm) {
+            // B. Este es el mes donde vence su saldo (el mes "Por Pagar" o Activo)
+            // Revisamos si ya se le pasó la fecha de corte para ver si es moroso
+            if (tempYm < currentYm) {
+                status = 'overdue';
+            } else if (tempYm === currentYm && currentDate.getDate() > startDay) {
+                // Si es el mes actual pero ya pasó el día del mes de su pago estático
+                status = 'overdue';
+            } else {
+                status = 'current'; // Es el mes actual/vencimiento a tiempo
+            }
+        } else {
+            // C. Si el mes es MAYOR al mes de vencimiento -> Es un mes futuro
+            // Pero ojo: si el mes ya pasó en el calendario real, es moroso acumulado
+            if (tempYm < currentYm) {
+                status = 'overdue';
+            } else {
+                status = 'future';
             }
         }
-        // Avanzar al siguiente mes
-        currentCheckDate.setMonth(currentCheckDate.getMonth() + 1);
+        // Formatear display
+        const dateObj = new Date(iterYear, iterMonth - 1, 15);
+        const rawName = formatter.format(dateObj);
+        const nameCapitalized = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+        const dateStr = `${iterYear}-${String(iterMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
+        months.push({
+            id: `${iterYear}-${String(iterMonth).padStart(2, '0')}`,
+            date: dateStr,
+            name: nameCapitalized,
+            status
+        });
+        iterMonth++;
+        if (iterMonth > 12) {
+            iterMonth = 1;
+            iterYear++;
+        }
     }
-    return dueDates;
+    return months;
 };
-
-// Determina el estado basado en si hay deuda
-export const getPlanStatus = (dueMonths: DueMonth[]): PaymentStatus => {
-    return dueMonths.length > 0 ? 'due' : 'paid';
-};
-
-export const getDetailedCurrentMonthStatus = (paymentDate: string | Date, paidMonths: string[] = []): DetailedStatus => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const startDate = new Date(paymentDate);
-    const paymentDay = startDate.getDate();
-    // 1. Determinar la fecha de vencimiento para el ciclo actual
-    const currentDueDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
-    // Si hoy ya pasó el día de pago de este mes, el vencimiento es el de este mes.
-    // Si no, el vencimiento que nos importa es el del mes pasado.
-    if (today.getDate() < paymentDay) {
-        currentDueDate.setMonth(currentDueDate.getMonth() - 1);
-    }
-    const dueDateString = currentDueDate.toISOString().split('T')[0];
-    // 2. Verificar si el mes actual ya está pagado
-    const normalizedPaidMonths = new Set(paidMonths.map(d => new Date(d).toISOString().split('T')[0]));
-    if (normalizedPaidMonths.has(dueDateString)) {
-        return { status: 'paid', message: 'Pagado a tiempo' };
-    }
-    // 3. Si no está pagado, determinar si está en gracia o vencido
-    const gracePeriodLimit = new Date(currentDueDate);
-    gracePeriodLimit.setDate(gracePeriodLimit.getDate() + 5);
-    // Si hoy es posterior a la fecha de vencimiento pero anterior al límite de gracia
-    if (today > currentDueDate && today <= gracePeriodLimit) {
-        const timeDiff = gracePeriodLimit.getTime() - today.getTime();
-        const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return {
-            status: 'grace_period',
-            message: `En período de gracia. Vence en ${daysRemaining} día(s).`,
-            daysRemaining: daysRemaining
-        };
-    }
-    // Si hoy ya pasó el límite del período de gracia
-    if (today > gracePeriodLimit) {
-        return { status: 'due', message: 'El pago de este mes está vencido.' };
-    }
-    // Si nada de lo anterior se cumple, significa que el pago aún no ha vencido
-    return { status: 'upcoming', message: 'Pago al día. Próximo vencimiento el ' + dueDateString };
-};
-

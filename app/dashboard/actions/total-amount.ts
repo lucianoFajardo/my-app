@@ -1,6 +1,6 @@
 'use server';
 import { createClient } from "@/utils/supabase/server";
-export default async function totalAmountMonths() {
+export default async function totalAmountMonthsAction() {
     const supabase = await createClient();
     const today = new Date();
     const first_day = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();

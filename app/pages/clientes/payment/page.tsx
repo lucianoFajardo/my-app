@@ -1,312 +1,392 @@
-"use client"
-import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Check, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { ClientPaymentInfo } from "../models/client-model";
-import { DataClientPaymentInfo } from "../actions/read-client-data-action";
-import ShowPayments from "./show-payments";
-import { readPaymentsAction } from "../actions/read-payments-action";
-import { Payment } from "../models/payment-model";
-import deleteDialogPaymentAction from "../actions/payment-delete-action";
-import { getMonthsDue, getPlanStatus } from "../actions/status-plan-action";
-import { DialogPayment } from "./dialog-payment";
-import { Separator } from "@radix-ui/react-dropdown-menu";
-import { Input } from "@/components/ui/input";
+'use client'
+import { useDeferredValue, useEffect, useState } from 'react';
+import { ViewStateClientPaymentInfoInterface } from '../models/payment-model';
+import { ClientPaymentInfo } from '../models/client-model';
+import { DataClientPaymentInfo, formatClientPaymentInfo, getClientById, getClientPaymentSnapshotById } from '../actions/read-client-data-action';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+    DollarSign,
+    Search,
+    ShieldCheck,
+    ShieldAlert,
+    Clock3,
+    ChevronRight,
+    CalendarDays,
+    ChevronLeft,
+    Book,
+    Pencil
+} from 'lucide-react';
+import { DialogPayment } from './dialog-payment';
 
-import { DateRange } from "react-day-picker";
+const PAGE_SIZE = 15;
 
-// Normaliza una fecha (string o Date) a un string 'YYYY-MM-DD'
-const normalizeDateStr = (d: string | Date): string => {
-    // Crea un objeto Date, manejando strings o Dates
-    const date = typeof d === 'string' ? new Date(d) : d;
-    // Usa los componentes de la fecha en UTC para evitar problemas de zona horaria
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+const formatDate = (value?: string) => {
+    if (!value) return 'N/A';
+    return new Date(value).toLocaleDateString('es-CL', { timeZone: 'UTC' });
 };
 
-// Limpia y normaliza la lista de meses pagados
-const normalizePaidMonths = (list?: (string | string[])[]): string[] => {
-    if (!list) return [];
-    const flatAndNormalized = list.flat().map(normalizeDateStr);
-    return Array.from(new Set(flatAndNormalized));
+const getInitials = (name?: string) => {
+    if (!name || name.trim().length === 0) return 'SN';
+    return name
+        .trim()
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('');
 };
 
-export default function PaymentPageClient() {
-    const [clientInfo, setClientInfo] = useState<ClientPaymentInfo[]>([]);
-    const [open, setOpen] = useState(false);
-    const [showPaymentsOpen, setShowPaymentsOpen] = useState(false);
-    const [selectedPayments, setSelectedPayments] = useState<Payment[]>([]);
-    const [selectedCliente, setSelectedCliente] = useState<ClientPaymentInfo | undefined>();
-    // parametros para la busqueda y filtrado de datos
-    const [searchParam, setSearchParam] = useState<string | undefined>("");
-    // Paginación de la tabla de pagos de clientes
-    const [page, setPage] = useState(0);
-    const itemsPerPage = 30;
-    // Aplicando filtro para poder filtraro los datos por fechas y rangos de pagos
-    const [showDebtorsOnly, setShowDebtorsOnly] = useState(false);
+const getStatusClasses = (status: ViewStateClientPaymentInfoInterface['status_pay_client']) => {
+    switch (status) {
+        case 'AL DÍA':
+            return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+        case 'MOROSO':
+            return 'border-red-200 bg-red-50 text-red-700';
+        case 'PERIODO DE GRACIA':
+            return 'border-amber-200 bg-amber-50 text-amber-700';
+        default:
+            return 'border-border bg-muted text-foreground';
+    }
+};
 
-    // Carga inicial de datos
-    useEffect(() => {
-        const fetchData = async () => {
-            const from = page * itemsPerPage;
-            const to = from + itemsPerPage - 1;
-            const rawData = await DataClientPaymentInfo({ from, to, searchParam });
-            const processedData = rawData.map(client => {
-                // Usamos la función para limpiar los datos que vienen de la BD
-                const safePaidMonths = normalizePaidMonths(client.paidMonths);
-                const dueMonths = getMonthsDue(client.initialPayment, safePaidMonths);
-                const planStatus = getPlanStatus(dueMonths);
-                return {
-                    ...client,
-                    paidMonths: safePaidMonths,
-                    monthsDue: dueMonths,
-                    planStatus
-                };
+export default function DashboardClientes() {
+    const [clients, setClients] = useState<ViewStateClientPaymentInfoInterface[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [query, setQuery] = useState('');
+    const deferredQuery = useDeferredValue(query);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [selectedClient, setSelectedClient] = useState<ClientPaymentInfo | undefined>(undefined);
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+    const loadData = async (page = currentPage, search = deferredQuery) => {
+        setLoading(true);
+        try {
+            const from = (page - 1) * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
+            const result = await DataClientPaymentInfo({
+                from,
+                to,
+                searchParam: search.trim() || undefined
             });
-            setClientInfo(processedData);
-        };
-        // un delay para evitar llamadas excesivas al cambiar de página rápidamente
-        const timeoutId = setTimeout(() => {
-            fetchData();
-        }, 300);
-        return () => clearTimeout(timeoutId);
-    }, [page, searchParam]);
-
-    // Función para verificar si una fecha está dentro del rango seleccionado sino debe de pagar
-    const isDateInRange = (d: string | Date, range?: DateRange) => {
-        if (!range?.from) return true;
-        const date = typeof d === "string" ? new Date(d) : d;
-        const from = new Date(range.from);
-        const to = range.to ? new Date(range.to) : new Date(range.from);
-        date.setHours(0, 0, 0, 0);
-        from.setHours(0, 0, 0, 0);
-        to.setHours(0, 0, 0, 0);
-        return date >= from && date <= to;
+            setClients(result.data);
+            setTotalCount(result.count);
+        } catch (error) {
+            console.error('Error cargando clients', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
     };
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [deferredQuery]);
 
-    // Lista derivada con filtros aplicados
-    const displayedClients = clientInfo.filter(c => {
-        const debtorOk = !showDebtorsOnly || c.planStatus !== "paid";
-        const dateOk = isDateInRange(c.initialPayment, );
-        return debtorOk && dateOk;
-    });
+    useEffect(() => {
+        loadData(currentPage, deferredQuery);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage, deferredQuery]);
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchParam(e.target.value);
-        setPage(0); // Reiniciar a la primera página al buscar
-    }
-
-    const handleOpenDialog = (client: ClientPaymentInfo) => {
-        setSelectedCliente(client);
-        setOpen(true);
-    };
-
-    const handleShowPayments = async (cliente: ClientPaymentInfo) => {
-        const payments = await readPaymentsAction(cliente.id_client);
-        setSelectedCliente(cliente);
-        setSelectedPayments(payments);
-        setShowPaymentsOpen(true);
-    };
-
-    const handleClosePayments = () => {
-        // Cerra el dialogo y limpiar los datos.
-        setShowPaymentsOpen(false);
-        setSelectedPayments([]);
-        setSelectedCliente(undefined);
-    };
-
-    const handleDeletePayment = async (payment: Payment, clientId: string) => {
-        await deleteDialogPaymentAction(payment.id_payments, clientId);
-        setSelectedPayments(prev =>
-            prev.filter(p => p.id_payments !== payment.id_payments)
-        );
-    };
-
-
-    const handlePaySuccess = useCallback(async (client: ClientPaymentInfo, paidMonthDates: string[]) => {
-        console.log(`Pago registrado localmente para los meses:`, paidMonthDates);
-        // Actualizamos la lista general de clientes (Tabla)
-        setClientInfo(prevClients => prevClients.map(c => {
-            if (c.id_client === client.id_client) {
-                // Unimos los meses que ya estaban pagados con los nuevos que se acaban de pagar
-                const combinedPaidMonths = [...(c.paidMonths || []), ...paidMonthDates];
-                // Normalizamos la lista para aplanar, formatear y eliminar duplicados
-                const newPaidMonths = normalizePaidMonths(combinedPaidMonths);
-                const newDueMonths = getMonthsDue(c.initialPayment, newPaidMonths);
-                const newStatus = getPlanStatus(newDueMonths);
-                return {
-                    ...c,
-                    paidMonths: newPaidMonths,
-                    monthsDue: newDueMonths,
-                    planStatus: newStatus
-                };
+    const handleOpenPayment = async (clientId: string) => {
+        try {
+            const [fullClientInfo, paymentSnapshot] = await Promise.all([
+                getClientById(clientId),
+                getClientPaymentSnapshotById(clientId),
+            ]);
+            if (fullClientInfo) {
+                const clientDataToPay = await formatClientPaymentInfo(fullClientInfo);
+                setSelectedClient({
+                    ...clientDataToPay,
+                    paid_until_date: paymentSnapshot?.covered_up_to ?? clientDataToPay.paid_until_date,
+                });
+                setIsPaymentDialogOpen(true);
             }
-            return c;
-        }));
+        } catch (error) {
+            console.error('Error al obtener info del cliente:', error);
+        }
+    };
 
-        setSelectedCliente(prevSelected => {
-            if (!prevSelected || prevSelected.id_client !== client.id_client) return prevSelected;
-            const combinedPaidMonths = [...(prevSelected.paidMonths || []), ...paidMonthDates];
-            const newPaidMonths = normalizePaidMonths(combinedPaidMonths);
-            const newDueMonths = getMonthsDue(prevSelected.initialPayment, newPaidMonths);
-            const newStatus = getPlanStatus(newDueMonths);
-            return {
-                ...prevSelected,
-                paidMonths: newPaidMonths,
-                monthsDue: newDueMonths,
-                planStatus: newStatus
-            };
-        });
-    }, []);
+    const handlePaySuccess = async (client: ClientPaymentInfo, paidMonthDates: string[]) => {
+        setSelectedClient(client);
 
-    const handleNextPage = () => {
-        setPage(prevPage => prevPage + 1);
-    }
+        try {
+            await loadData(currentPage, deferredQuery);
+        } catch (error) {
+            console.error('Error al refrescar la lista de pagos:', error);
+        }
 
-    const handelePreviousPage = () => {
-        setPage(page > 0 ? page - 1 : 0)
-    }
+        console.log('Pago exitoso para el cliente:', client, 'Fechas pagadas:', paidMonthDates, 'Cubierto hasta:', client.paid_until_date);
+    };
+
+    const upToDateCount = clients.filter((client) => client.status_pay_client === 'AL DÍA').length;
+    const graceCount = clients.filter((client) => client.status_pay_client === 'PERIODO DE GRACIA').length;
+    const overdueCount = clients.filter((client) => client.status_pay_client === 'MOROSO').length;
+    //* --> Paginacion de la vista, se calcula el rango de items que se están mostrando en base a la página actual y el total de items..
+    const fromItem = totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+    const toItem = Math.min(currentPage * PAGE_SIZE, totalCount);
 
     return (
-        <div className="mt-8 w-full p-2 mx-auto">
-            <Card className="shadow-xl border border-primary-100">
-                <CardHeader className="bg-primary-50 rounded-t-xl shadow-sm">
-                    <CardTitle className="text-2xl text-primary-700">Gestion de Pagos</CardTitle>
-                    <CardDescription className="text-primary-500">
-                        Gestión de pagos y estados de los clientes.
-                    </CardDescription>
-                    <CardAction>
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <Button
-                                variant={showDebtorsOnly ? "default" : "outline"}
-                                onClick={() => setShowDebtorsOnly(prev => !prev)}
-                                className={showDebtorsOnly ? "bg-red-600 text-white" : "bg-blue-700 text-white hover:bg-blue-500 hover:text-white"}
-                            >
-                                Solo deudores
-                            </Button>
-                            <div className="relative w-72">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
+        <section className="min-h-[calc(100vh-7rem)] bg-[radial-gradient(circle_at_top_left,rgba(80,140,255,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.10),transparent_24%)]">
+            <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
+                <Card className="overflow-hidden border-border/60 bg-card/85 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur">
+                    <CardContent className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
+                        <div className="space-y-2">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+                                <DollarSign className="h-3.5 w-3.5" />
+                                Control de facturación
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+                                    Gestión de Pagos de Clientes
+                                </h1>
+                                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                                    Visualiza rápidamente el estado de cada cliente, su fecha de corte y abre el flujo de cobro desde una sola vista.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:min-w-[460px]">
+                            <Card className="border-emerald-200/70 bg-emerald-50/70 shadow-none">
+                                <CardContent className="flex items-center gap-3 p-4">
+                                    <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
+                                        <ShieldCheck className="h-4 w-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-emerald-700/80">Al día</p>
+                                        <p className="text-xl font-semibold text-emerald-800">{upToDateCount}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-amber-200/70 bg-amber-50/70 shadow-none">
+                                <CardContent className="flex items-center gap-3 p-4">
+                                    <div className="rounded-xl bg-amber-100 p-2 text-amber-700">
+                                        <Clock3 className="h-4 w-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-amber-700/80">Gracia</p>
+                                        <p className="text-xl font-semibold text-amber-800">{graceCount}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-red-200/70 bg-red-50/70 shadow-none">
+                                <CardContent className="flex items-center gap-3 p-4">
+                                    <div className="rounded-xl bg-red-100 p-2 text-red-700">
+                                        <ShieldAlert className="h-4 w-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-red-700/80">Morosos</p>
+                                        <p className="text-xl font-semibold text-red-800">{overdueCount}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-border/60 bg-card/90 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+                    <CardHeader className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <CardTitle className="text-xl">Resumen operativo</CardTitle>
+                            <CardDescription className="mt-1">
+                                Mostrando {fromItem} - {toItem} de {totalCount} cliente(s).
+                            </CardDescription>
+                        </div>
+
+                        <div className="w-full md:max-w-sm">
+                            <div className="relative">
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Buscar cliente..."
-                                    value={searchParam}
-                                    onChange={handleSearch}
-                                    className="pl-8 bg-white border-primary-200 focus-visible:ring-primary-500"
+                                    value={query}
+                                    onChange={(event) => setQuery(event.target.value)}
+                                    placeholder="Buscar cliente o estado..."
+                                    className="h-10 rounded-xl border-border/70 bg-background pl-9"
                                 />
                             </div>
                         </div>
-                    </CardAction>
-                </CardHeader>
-                <CardContent className="overflow-x-auto p-0">
-                    <div className="max-h-[60vh] overflow-y-auto">
-                        <Table className="rounded-xl bg-white shadow-lg border border-primary-100">
-                            <TableHeader className="bg-primary-100 sticky top-0 z-10">
-                                <TableRow>
-                                    <TableHead className="text-primary-700 font-bold">Nombre</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Antena</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Plan</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Instalación</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Fechas de pago</TableHead>
-                                    <TableHead className="text-primary-700 font-bold">Estado</TableHead>
-                                    <TableHead className="text-primary-700 font-bold text-center">Acciones</TableHead>
+                    </CardHeader>
+
+                    <CardContent className="p-0">
+                        <Table className="min-w-full">
+                            <TableHeader className="">
+                                <TableRow className="">
+                                    <TableHead className="px-6 py-4">Cliente</TableHead>
+                                    <TableHead className="py-4">Día de Pago</TableHead>
+                                    <TableHead className="py-4">Pagado Hasta</TableHead>
+                                    <TableHead className="py-4">Rango de Pago</TableHead>
+                                    <TableHead className="py-4">Estado</TableHead>
+                                    <TableHead className="py-4 text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
+
                             <TableBody>
-                                {displayedClients.map((cliente) => {
-                                    return (
-                                        <TableRow key={cliente.id_client} className="hover:bg-primary-50">
-                                            <TableCell>{cliente.name} {cliente.lastname}</TableCell>
-                                            <TableCell>{cliente.antennaName}</TableCell>
-                                            <TableCell>$ {cliente.plan}</TableCell>
-                                            <TableCell>
-                                                {new Date(cliente.initialPayment).toLocaleDateString()}
+                                {loading ? (
+                                    Array.from({ length: PAGE_SIZE }).map((_, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                                    <div className="space-y-2">
+                                                        <Skeleton className="h-4 w-36" />
+                                                        <Skeleton className="h-3 w-24" />
+                                                    </div>
+                                                </div>
                                             </TableCell>
-                                            <TableCell>
-                                                {cliente.range_payment}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cliente.planStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {cliente.planStatus === 'paid' ? 'Al día' : `Debe ${cliente.monthsDue.length ? cliente.monthsDue.length : 0} mes(es)`}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-center flex justify-center gap-2">
-                                                <Button
-                                                    onClick={() => handleOpenDialog(cliente)}
-                                                    size="sm"
-                                                    className="bg-primary-600 text-red hover:bg-primary-700"
-                                                >
-                                                    <Check className="w-4 h-4 mr-1" /> Pagar
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleShowPayments(cliente)}
-                                                    variant="outline"
-                                                    size="sm"
-                                                >
-                                                    <Eye className="w-4 h-4 mr-1" /> Ver
-                                                </Button>
-                                            </TableCell>
+                                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-28 rounded-full" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-28 rounded-full" /></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="ml-auto h-9 w-32 rounded-full" /></TableCell>
                                         </TableRow>
-                                    )
-                                })}
+                                    ))
+                                ) : clients.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="px-6 py-16 text-center">
+                                            <div className="mx-auto max-w-md space-y-2">
+                                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+                                                    <Search className="h-5 w-5 text-muted-foreground" />
+                                                </div>
+                                                <p className="text-base font-medium">No hay resultados para esa búsqueda</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Intenta con otro nombre o limpia el filtro para ver todos los clientes.
+                                                </p>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    clients.map((cliente) => {
+                                        const clientName = cliente.client || 'Sin nombre';
+                                        return (
+                                            <TableRow key={cliente.id_client} className="border-border/80 hover:bg-muted/50">
+                                                <TableCell className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-10 w-10 border border-border/80">
+                                                            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                                                                {getInitials(clientName)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+
+                                                        <div className="min-w-0">
+                                                            <p className="truncate font-medium text-foreground">
+                                                                {clientName}
+                                                            </p>
+                                                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                                                ID: {cliente.id_client.slice(0, 8)}...
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <CalendarDays className="h-4 w-4 text-primary" />
+                                                        <span className="font-medium text-foreground">
+                                                            {formatDate(cliente.day_static_pay)}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <span className="font-medium text-blue-700 border bg-blue-200 border-blue-500 px-2 rounded-full text-sm">
+                                                        {formatDate(cliente.covered_up_to)}
+                                                    </span>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <span className="font-medium text-foreground border border-border/70 bg-muted/50 px-2 py-1 rounded-full text-sm">
+                                                        {cliente.payment_range}
+                                                    </span>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide ${getStatusClasses(cliente.status_pay_client)}`}
+                                                    >
+                                                        {cliente.status_pay_client}
+                                                    </Badge>
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
+                                                    <div>
+                                                        <Button
+                                                            disabled
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 text-xs bg-background shadow-sm hover:bg-muted"
+                                                        >
+                                                            <Book className="ml-1 h-4 w-4" />
+                                                            Historial
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        size="sm"
+                                                        className="shadow-sm"
+                                                        onClick={() => handleOpenPayment(cliente.id_client)}
+                                                    >
+                                                        Gestionar pago
+                                                        <ChevronRight className="ml-1 h-2 w-2" />
+                                                    </Button>
+                                                </TableCell>
+
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
                             </TableBody>
                         </Table>
-                    </div>
-                    <Separator className="my-5" />
-                    <CardFooter >
-                        <CardAction>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-primary-700 font-medium">
-                                    Página Actual {page + 1}
-                                </span>
-                                <div className="flex items-center bg-white rounded-md border border-primary-200 shadow-sm m-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handelePreviousPage}
-                                        disabled={page === 0}
-                                        className="h-8 w-8 rounded-r-none hover:bg-primary-50"
-                                    >
-                                        <ChevronLeft className="w-4 h-4 text-primary-700" />
-                                    </Button>
-                                    <div className="w-4 h-4 bg-primary-200"></div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleNextPage}
-                                        // Deshabilitar si la respuesta trajo menos datos que el tamaño de página (fin de la lista)
-                                        disabled={clientInfo.length < (itemsPerPage * (page + 1))}
-                                        className="h-8 w-8 rounded-l-none hover:bg-primary-50"
-                                    >
-                                        <ChevronRight className="w-4 h-4 text-primary-700" />
-                                    </Button>
-                                </div>
+
+                        <div className="flex flex-col gap-3 border-t border-border/60 px-6 py-4 md:flex-row md:items-center md:justify-between">
+                            <p className="text-sm text-muted-foreground">
+                                Página {currentPage} de {totalPages}
+                            </p>
+
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1 || loading}
+                                >
+                                    <ChevronLeft className="mr-1 h-4 w-4" />
+                                    Anterior
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages || loading}
+                                >
+                                    Siguiente
+                                    <ChevronRight className="ml-1 h-4 w-4" />
+                                </Button>
                             </div>
-                        </CardAction>
-                    </CardFooter>
-                </CardContent>
-            </Card>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
 
-            {open && selectedCliente && (
-                <DialogPayment
-                    isOpen={open}
-                    onClose={() => setOpen(false)}
-                    onPaySuccess={handlePaySuccess}
-                    data={selectedCliente}
-                />
-            )}
-
-            {showPaymentsOpen && selectedCliente && (
-                <ShowPayments
-                    isOpen={showPaymentsOpen}
-                    onClose={handleClosePayments}
-                    onDeletePayment={(payment) => handleDeletePayment(payment, selectedCliente.id_client)}
-                    data={{ ...selectedCliente, payments: selectedPayments }}
-                />
-            )}
-        </div>
+            <DialogPayment
+                isOpen={isPaymentDialogOpen}
+                onClose={() => {
+                    setIsPaymentDialogOpen(false);
+                    setSelectedClient(undefined);
+                }}
+                data={selectedClient}
+                onPaySuccess={handlePaySuccess}
+            />
+        </section>
     );
 }

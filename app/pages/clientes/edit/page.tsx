@@ -1,9 +1,9 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Eye, Pencil, Search, Trash } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Pencil, Search, Trash, Users, Signal, Calendar, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import readClientDataAction from "../actions/read-client-data-action";
 import { ClienteModel } from "../models/client-model";
@@ -11,7 +11,6 @@ import { CardEditCliente } from "./dialog-edit";
 import { DialogDeleteCliente } from "../delete/dialog-delete";
 import ShowDataPageClient from "../show-data/show-data-page";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export default function EditDateClientPage() {
     const [dataClient, setDataClient] = useState<ClienteModel[]>([]);
@@ -30,7 +29,7 @@ export default function EditDateClientPage() {
 
     // Paginación de la tabla de clientes
     const [page, setPage] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Cambiado a true inicial
     const limit = 15;
 
 
@@ -103,160 +102,179 @@ export default function EditDateClientPage() {
 
     if (loading) {
         return (
-            <div className="fixed top-0 left-0 w-full h-screen flex items-center justify-center bg-white/80 z-50 backdrop-blur-sm">
+            <div className="flex w-full h-[60vh] items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <span className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary-500"></span>
-                    <span className="text-primary-700 font-bold text-lg animate-pulse">Cargando datos...</span>
+                    <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></span>
+                    <span className="text-muted-foreground font-medium text-sm animate-pulse">Cargando datos...</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="mt-8 w-full p-2 mx-auto">
-            <Card className="shadow-xl border border-primary-100">
-                <CardHeader className="bg-primary-50 rounded-t-xl shadow-sm">
-                    <CardTitle className="text-2xl text-primary-700">Editar Cliente</CardTitle>
-                    <CardDescription className="text-primary-500">
-                        Aquí podrás editar la información de los clientes registrados.
-                    </CardDescription>
-                    <CardAction>
-                        <div className="relative w-72">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-primary-500" />
+        <div className="container mx-auto py-6 px-4 md:px-0">
+            <Card className="w-full mx-auto border-border bg-card shadow-sm rounded-xl overflow-hidden">
+                <CardHeader className="bg-muted/30 pb-6 pt-5 border-b">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                <Users className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl font-bold tracking-tight">Directorio de Clientes</CardTitle>
+                                <CardDescription className="text-muted-foreground mt-0.5 text-sm">
+                                    Busca, edita o elimina la información de tus clientes registrados.
+                                </CardDescription>
+                            </div>
+                        </div>
+                        <div className="relative w-full sm:w-64 md:w-72">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Buscar cliente..."
                                 value={searchParam}
                                 onChange={handleSearch}
-                                className="pl-8 bg-white border-primary-200 focus-visible:ring-primary-500"
+                                className="pl-9 bg-background h-9 text-sm border-border/60 focus-visible:ring-primary/20 shadow-sm"
                             />
                         </div>
-                    </CardAction>
+                    </div>
                 </CardHeader>
-                <CardContent className="overflow-x-auto p-0">
+                <CardContent className="p-0">
                     <div className="max-h-[60vh] overflow-y-auto">
-                        <Table className="rounded-xl bg-white">
-                            <TableHeader className="bg-primary-100 sticky top-0 z-10">
-                                <TableRow>
-                                    <TableHead className="text-primary-700">
-                                        <span>
-                                            👤
-                                        </span>
-                                        Nombre
+                        <Table className="w-full">
+                            <TableHeader className="bg-muted/40 sticky top-0 z-10 hidden sm:table-header-group">
+                                <TableRow className="border-b border-border/60 hover:bg-transparent">
+                                    <TableHead className="font-semibold text-foreground h-11">
+                                        <div className="flex items-center gap-1.5">
+                                            <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                                            Nombre
+                                        </div>
                                     </TableHead>
-                                    <TableHead className="text-primary-700">
-                                        <span>
-                                            📡
-                                        </span>
-                                        Antena
+                                    <TableHead className="font-semibold text-foreground h-11">
+                                        <div className="flex items-center gap-1.5">
+                                            <Signal className="w-3.5 h-3.5 text-muted-foreground" />
+                                            Antena
+                                        </div>
                                     </TableHead>
-                                    <TableHead className="text-primary-700">
-                                        <span>
-                                            🗓️
-                                        </span>
-                                        Plan
+                                    <TableHead className="font-semibold text-foreground h-11">
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                                            Plan
+                                        </div>
                                     </TableHead>
-                                    <TableHead className="text-primary-700">Fechas de pago</TableHead>
-                                    <TableHead className="text-primary-700">
-                                        <span className="mr-2">
-                                            📞
-                                        </span>
-                                        Contactos
+                                    <TableHead className="font-semibold text-foreground h-11">Ciclo Pago</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11">
+                                        <div className="flex items-center gap-1.5">
+                                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                                            Contactos
+                                        </div>
                                     </TableHead>
-                                    <TableHead className="text-primary-700 text-center">Acciones</TableHead>
+                                    <TableHead className="font-semibold text-foreground h-11 text-center">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {dataClient.map((usuario, idx) => (
+                                {dataClient.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                            No hay datos de clientes registrados para mostrar.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {dataClient.map((usuario) => (
                                     <TableRow
                                         key={usuario.id_client}
-                                        className={`transition ${idx % 2 === 0 ? "bg-white" : "bg-primary-50"} hover:bg-primary-100`}
+                                        className="hover:bg-muted/30 border-b border-border/60 transition-colors"
                                     >
-                                        <TableCell>{usuario.name}</TableCell>
-                                        <TableCell>{usuario.antennaName}</TableCell>
-                                        <TableCell>
-                                            <span className="px-2 py-1 rounded bg-primary-50 text-primary-700 text-xs">$ {usuario.plan}</span>
+                                        <TableCell className="font-medium text-sm text-foreground">
+                                            {usuario.name} {usuario.lastname}
                                         </TableCell>
+                                        <TableCell className="text-sm text-muted-foreground">{usuario.antenna_name}</TableCell>
                                         <TableCell>
-                                            <span className="px-2 py-1 rounded bg-primary-50 text-primary-700 text-xs font-bold">{usuario.range_payment}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="m-2 px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                                                {usuario.phone1}
-                                            </span>
-                                            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
-                                                {usuario.phone2}
+                                            <span className="px-2 py-0.5 rounded-md border border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
+                                                $ {usuario.plan}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="text-center flex items-center justify-center gap-2">
-                                            <Button
-                                                onClick={() => handelEditClick(usuario.id_client)}
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex items-center gap-2 border-primary-300 text-black hover:bg-purple-100"
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                                Editar
-                                            </Button>
-                                            <Button
-                                                onClick={() => {
-                                                    setClientSelectedShowData(usuario);
-                                                    setIsOpenDialogShowData(true);
-                                                }}
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex items-center gap-2 border-primary-300 text-black hover:bg-purple-100"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                                Ver Detalles
-                                            </Button>
-                                            <Button
-                                                onClick={() => handeleDeleteClick(usuario.id_client)}
-                                                variant="destructive"
-                                                size="sm"
-                                                className="flex items-center gap-2 ml-2"
-                                            >
-                                                <Trash className="w-4 h-4" />
-                                                Eliminar
-                                            </Button>
+                                        <TableCell>
+                                            <span className="px-2 py-0.5 rounded-md border bg-muted/40 text-foreground text-xs font-medium">
+                                                {usuario.range_payment}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium border border-blue-200 bg-blue-50 text-blue-700">
+                                                    {usuario.phone1}
+                                                </span>
+                                                {usuario.phone2 && (
+                                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium border border-purple-200 bg-purple-50 text-purple-700">
+                                                        {usuario.phone2}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button
+                                                    onClick={() => handelEditClick(usuario.id_client)}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-8 text-xs bg-background shadow-sm hover:bg-muted"
+                                                >
+                                                    <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
+                                                </Button>
+                                                <Button
+                                                    onClick={() => {
+                                                        setClientSelectedShowData(usuario);
+                                                        setIsOpenDialogShowData(true);
+                                                    }}
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    className="h-8 text-xs bg-primary/10 text-primary hover:bg-primary/20 shadow-sm"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5 mr-1" /> Detalles
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handeleDeleteClick(usuario.id_client)}
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    className="h-8 text-xs shadow-sm bg-destructive/10 text-destructive border-transparent hover:bg-destructive hover:text-white"
+                                                >
+                                                    <Trash className="w-3.5 h-3.5 mr-1" /> Borrar
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </div>
-                    <Separator className="my-2" />
-                    <CardFooter className="bg-primary-50 rounded-b-xl max-w-sm mx-auto">
-                        <CardAction>
-                            <div className="flex items-center gap-3 relative">
-                                <span className="text-sm text-primary-700 font-medium">
-                                    Página Actual {page + 1}
-                                </span>
-                                <div className="flex bg-white rounded-md border border-primary-200 shadow-sm m-2 relative">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handelePreviousPage}
-                                        disabled={page === 0}
-                                        className="h-8 w-8 rounded-r-none hover:bg-primary-50"
-                                    >
-                                        <ChevronLeft className="w-4 h-4 text-primary-700" />
-                                    </Button>
-                                    <div className="w-4 h-4 bg-primary-200 position-relative"></div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleNextPage}
-                                        // Deshabilitar si la respuesta trajo menos datos que el tamaño de página (fin de la lista)
-                                        disabled={dataClient.length < (limit * (page + 1))}
-                                        className="h-8 w-8 rounded-l-none hover:bg-primary-50 "
-                                    >
-                                        <ChevronRight className="w-4 h-4 text-primary-700" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardAction>
-                    </CardFooter>
                 </CardContent>
+
+                {/* Footer Paginación */}
+                <CardFooter className="py-4 px-6 bg-muted/20 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span className="text-sm text-muted-foreground font-medium">
+                        Página Actual {page + 1}
+                    </span>
+                    <div className="flex items-center gap-1 bg-background rounded-md border shadow-sm">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handelePreviousPage}
+                            disabled={page === 0}
+                            className="h-8 w-8 rounded-r-none hover:bg-muted"
+                        >
+                            <ChevronLeft className="w-4 h-4 text-foreground" />
+                        </Button>
+                        <div className="w-[1px] h-4 bg-border"></div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleNextPage}
+                            disabled={dataClient.length < (limit * (page + 1))}
+                            className="h-8 w-8 rounded-l-none hover:bg-muted"
+                        >
+                            <ChevronRight className="w-4 h-4 text-foreground" />
+                        </Button>
+                    </div>
+                </CardFooter>
             </Card>
 
             {isOpenDialogEdit && clientSelectedDate && (

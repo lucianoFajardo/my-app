@@ -7,6 +7,7 @@ export default async function readInstalationAction() {
     const now = new Date();
     const firstDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const lastDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+    //* Feature: agregar para poder ver el mes en el que el usuario se encuentra o poder elegir el mes a consultar..!!
     try {
         const { data, error } = await supabase
             .from('installations')
@@ -22,8 +23,3 @@ export default async function readInstalationAction() {
         throw new Error('Error al leer las instalaciones')
     }
 }
-
-//TODO -< agregar un filtro para poder leer las instalaciones en el mes que uno se coloque en el calendario, para ver instalaciones antiguas
-
-//Fn para leer las instalaciones del mes actual, se utiliza para mostrar en el calendario 
-// y en la lista de instalaciones del mes

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-export default async function totalClients() {
+export default async function totalClientsAction() {
     const supabase = createClient();
     try {
         const data = (await supabase).rpc('total_records').single();
