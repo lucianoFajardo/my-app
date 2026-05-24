@@ -45,7 +45,7 @@ export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }:
                                                 </li>
                                                 <li className="bg-green-100 rounded-r-lg">
                                                     <p className="text-green-700">
-                                                        - Monto pagado: ${payment.amount_pay?.toFixed(3)}
+                                                        - Monto pagado: ${payment.amount_pay?.toFixed(1)}
                                                     </p>
                                                 </li>
                                             </ul>

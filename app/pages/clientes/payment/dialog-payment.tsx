@@ -31,6 +31,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
         if (!data) return [];
         return getAllPaymentMonths(data.initial_payment, data.paid_until_date || data.initial_payment);
     }, [data]);
+    
     if (!data) return null;
     const paidMonths = allMonths.filter(m => m.status === 'paid');
     const overdueMonths = allMonths.filter(m => m.status === 'overdue');
@@ -173,7 +174,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     <div className="text-left w-full sm:w-auto">
                         <p className="text-sm text-muted-foreground">Meses a pagar: <span className="font-semibold text-foreground">{selectedDates.length}</span></p>
                         <p className="text-lg font-bold text-foreground">
-                            Total: <span className="text-primary">${totalToPay.toFixed(4)}</span>
+                            Total: <span className="text-primary">${totalToPay.toFixed(3)}</span>
                         </p>
                     </div>
                     <Button

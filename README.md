@@ -2,61 +2,64 @@
 
 ## 📋 Descripción del Proyecto
 
-Breve descripción del proyecto y sus objetivos principales.
-
+ESTE PROYECTO BUSCA SOLUCIONAR Y SATISFACER LA NECESIDAD DE UNA EMPRESA LOCAL DE MANTENER UN SERVICIO ORDENADO Y ACTUALIZADO
+DEL ESTADO DE SU EMPRESA POR ESO NACE GYGDASBOARD
 ---
 
 ## 🚀 Características Principales
 
-- Característica 1
-- Característica 2
-- Característica 3
+- CRM PARA EL ORDEN Y ESTRUCTURACION DE UNA EMPRESA
+- PAGOS , REGISTROS, MODIFICACIONES
+- METODO CENTRALIZADO Y OPTIMIZADO DE DATOS
 
 ---
 
 ## 📦 Versiones
 
-### v1.0.0 - [Fecha]
-- Descripción de cambios principales
-- Nuevas funcionalidades
-- Bugs corregidos
+### v1.0.0 - [25-05-26]
 
-### v0.9.0 - [Fecha]
 - Descripción de cambios principales
+- CAMBIOS VISUALES , REGISTROS DE CLIENTES Y PAGOS ACTUALIZADOS
+- EDITAR CLIENTES , VISUALIZAR INFORMACION MAS RELEVANTE EN EL DASHBOARD
+- PAGOS DE LOS CLIENTES Y LA EDICION DE LOS DATOS DE LOS CLIENTES CORREGIDA
 
 ---
 
 ## 🔧 Mejoras y Avances
 
 ### Avances Recientes
-- [Avance 1] - Descripción
-- [Avance 2] - Descripción
-- [Avance 3] - Descripción
+
+- [Avance 1] - EDICION DE DATOS DE CLIENTES.
+- [Avance 2] - EDICION DE LOS PAGOS QUE SE REGISTRAN A NOMBRE DE UN CLIENTE.
+- [Avance 3] - VISUALIZAR DATA DE INSTALACIONES PENDIENTES.
 
 ### Mejoras Implementadas
-- ✅ Optimización de rendimiento
-- ✅ Interfaz mejorada
-- ✅ Mejor documentación
+
+- ✅ OPTIMIZACION DE RENDIMIENTO
+- ✅ INTERFAZ MEJORADA
+- ✅ MEJOR DOCUMENTACION Y MAS ESTRUCTURADA
+- ✅ MEJORA DE OPTIMIZACION DE RECURSOS
 
 ### En Desarrollo
-- 🔄 Nueva funcionalidad 1
-- 🔄 Nueva funcionalidad 2
+
+- 🔄 NUEVA FUNCIONALIDAD -> EDITAR DATOS DE CUENTAS PROPIAS DE USUARIOS
+- 🔄 NUEVA FUNCIONALIDAD -> CREAR REGISTRO DE RETIRO DE CLIENTES
+- 🔄 NUEVA FUNCIONALIDAD -> EDITAR FECHAS DE PAGOS Y MESES DE LOS CLIENTES YA CREADOS
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
-- Node.js / React / Vue (especificar según corresponda)
-- Base de datos: [especificar]
-- Herramientas: [especificar]
+- Node.js / React / Ts
+- Base de datos: [Supabase]
+- Herramientas: [shadCn , ts , lucideicon]
 
 ---
 
 ## 📋 Requisitos
 
-- Node.js v14+
-- npm o yarn
-- [Otros requisitos]
+- Node.js v20+
+- npm
 
 ---
 
@@ -100,5 +103,4 @@ npm run build
 
 ## 📞 Contacto
 
-Para más información o reportar bugs, contactar a: [email o link]
-
+Para más información o reportar bugs, contactar a: [l.eduardof1420@gmail.com]

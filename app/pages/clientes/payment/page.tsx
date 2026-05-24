@@ -18,11 +18,13 @@ import {
     Clock3,
     ChevronRight,
     CalendarDays,
-    ChevronLeft
+    ChevronLeft,
+    Book,
+    Pencil
 } from 'lucide-react';
 import { DialogPayment } from './dialog-payment';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 const formatDate = (value?: string) => {
     if (!value) return 'N/A';
@@ -126,10 +128,9 @@ export default function DashboardClientes() {
     const upToDateCount = clients.filter((client) => client.status_pay_client === 'AL DÍA').length;
     const graceCount = clients.filter((client) => client.status_pay_client === 'PERIODO DE GRACIA').length;
     const overdueCount = clients.filter((client) => client.status_pay_client === 'MOROSO').length;
-    // --> Paginacion de la vista, se calcula el rango de items que se están mostrando en base a la página actual y el total de items..
+    //* --> Paginacion de la vista, se calcula el rango de items que se están mostrando en base a la página actual y el total de items..
     const fromItem = totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
     const toItem = Math.min(currentPage * PAGE_SIZE, totalCount);
-    //----------------------------
 
     return (
         <section className="min-h-[calc(100vh-7rem)] bg-[radial-gradient(circle_at_top_left,rgba(80,140,255,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.10),transparent_24%)]">
@@ -214,12 +215,12 @@ export default function DashboardClientes() {
                     </CardHeader>
 
                     <CardContent className="p-0">
-                        <Table className="min-w-[860px]">
-                            <TableHeader className="bg-muted/35">
-                                <TableRow className="hover:bg-muted/35">
+                        <Table className="min-w-full">
+                            <TableHeader className="">
+                                <TableRow className="">
                                     <TableHead className="px-6 py-4">Cliente</TableHead>
                                     <TableHead className="py-4">Día de Pago</TableHead>
-                                    <TableHead className="py-4">Cubierto Hasta</TableHead>
+                                    <TableHead className="py-4">Pagado Hasta</TableHead>
                                     <TableHead className="py-4">Rango de Pago</TableHead>
                                     <TableHead className="py-4">Estado</TableHead>
                                     <TableHead className="py-4 text-right">Acciones</TableHead>
@@ -264,10 +265,10 @@ export default function DashboardClientes() {
                                     clients.map((cliente) => {
                                         const clientName = cliente.client || 'Sin nombre';
                                         return (
-                                            <TableRow key={cliente.id_client} className="border-border/60 hover:bg-muted/50">
+                                            <TableRow key={cliente.id_client} className="border-border/80 hover:bg-muted/50">
                                                 <TableCell className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <Avatar className="h-10 w-10 border border-border/70">
+                                                        <Avatar className="h-10 w-10 border border-border/80">
                                                             <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                                                                 {getInitials(clientName)}
                                                             </AvatarFallback>
@@ -294,7 +295,7 @@ export default function DashboardClientes() {
                                                 </TableCell>
 
                                                 <TableCell>
-                                                    <span className="font-medium text-foreground">
+                                                    <span className="font-medium text-blue-700 border bg-blue-200 border-blue-500 px-2 rounded-full text-sm">
                                                         {formatDate(cliente.covered_up_to)}
                                                     </span>
                                                 </TableCell>
@@ -315,15 +316,30 @@ export default function DashboardClientes() {
                                                 </TableCell>
 
                                                 <TableCell className="text-right">
+                                                    <div>
+                                                        <Button
+                                                            disabled
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 text-xs bg-background shadow-sm hover:bg-muted"
+                                                        >
+                                                            <Book className="ml-1 h-4 w-4" />
+                                                            Historial
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
                                                     <Button
                                                         size="sm"
-                                                        className="rounded-full px-4 shadow-sm"
+                                                        className="shadow-sm"
                                                         onClick={() => handleOpenPayment(cliente.id_client)}
                                                     >
                                                         Gestionar pago
-                                                        <ChevronRight className="ml-1 h-4 w-4" />
+                                                        <ChevronRight className="ml-1 h-2 w-2" />
                                                     </Button>
                                                 </TableCell>
+
                                             </TableRow>
                                         );
                                     })

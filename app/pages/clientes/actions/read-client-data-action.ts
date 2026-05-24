@@ -71,20 +71,20 @@ export const DataClientPaymentInfo = async ({
 }): Promise<ClientPaymentPageResult> => {
     try {
         const supabase = await createClient();
-        //--> Apuntamos a la VISTA que cree en lugar de la tabla 'clients'
+        //* --> Apuntamos a la VISTA que cree en lugar de la tabla 'clients'
         let query = supabase.from('view_control_services_payment')
             .select('*', { count: 'exact' })
             .order('covered_up_to', { ascending: true });
-        //--> Filtro de búsqueda (Adaptado a las columnas de tu vista)
+        //* --> Filtro de búsqueda (Adaptado a las columnas de tu vista)
         if (searchParam?.trim()) {
             query = query.or(`client.ilike.%${searchParam}%,status_pay_client.ilike.%${searchParam}%`);
         }
-        //--> Paginación y ejecución en un solo paso
+        //* --> Paginación y ejecución en un solo paso
         const { data, error, count } = await query.range(from, to);
         if (error) {
             throw error;
         }
-        //--> Retornamos los datos limpios y listos para mostrar al cliente los datos.
+        //* --> Retornamos los datos limpios y listos para mostrar al cliente los datos.
         return { data: data as ViewStateClientPaymentInfoInterface[], count: count ?? 0 };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";

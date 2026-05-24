@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { plans, rangePaymentDates, sectors } from "../models/select-drops-data-model";
 import { Textarea } from "@/components/ui/textarea";
 import { UpdateClientAction } from "../actions/update-client-action";
-import { formatDateRangeAction } from "../actions/format-date-range-action";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { MapPin, Pencil, Signal, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -29,15 +28,9 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
     });
     const planValue = watch("plan");
     const sectorValue = watch("sector");
-
     const onEditSubmit = async (data: ClienteModel) => {
-        if (data.initial_payment != cliente.initial_payment) {
-            data.initial_payment = formatDateRangeAction(data.initial_payment);
-        } else {
-            data.initial_payment = cliente.initial_payment;
-        }
         const dataGet = { ...data };
-        await UpdateClientAction(dataGet.id_client!, dataGet)
+        await UpdateClientAction(dataGet.id_client, dataGet)
             .then(() => {
                 alert("Cliente actualizado con éxito");
                 if (onSubmit) onSubmit(dataGet);
@@ -73,7 +66,6 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
                     })}
                 >
                     <div className="px-6 py-6 max-h-[65vh] overflow-y-auto space-y-6">
-
                         {/* Datos Generales */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-foreground">
@@ -103,9 +95,7 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
                                 </div>
                             </div>
                         </div>
-
                         <Separator className="bg-border/60" />
-
                         {/* Servicio */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-foreground">
@@ -114,8 +104,8 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="antennaName" className="text-xs font-medium text-muted-foreground">Nombre Antena</Label>
-                                    <Input id="antennaName" className="h-9 text-sm bg-background" {...register("antenna_name", { required: true, pattern: /^[A-Za-z0-9 ]+$/ })} />
+                                    <Label htmlFor="antenna_name" className="text-xs font-medium text-muted-foreground">Nombre Antena</Label>
+                                    <Input id="antenna_name" className="h-9 text-sm bg-background" {...register("antenna_name", { required: true, pattern: /^[A-Za-z0-9 ]+$/ })} />
                                     {errors.antenna_name && <span className="text-destructive text-[10px]">Requerido</span>}
                                 </div>
                                 <div className="space-y-1.5">
@@ -152,7 +142,7 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
                                         setValue("initial_payment", value)
                                         setValue("range_payment", value)
                                     }}>
-                                        <SelectTrigger className="h-9 text-sm bg-background">
+                                        <SelectTrigger className="h-9 text-sm bg-background" disabled>
                                             <SelectValue placeholder="Selecciona un rango" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -170,9 +160,7 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
                                 </div>
                             </div>
                         </div>
-
                         <Separator className="bg-border/60" />
-
                         {/* Ubicación y Extras */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-foreground">
@@ -197,7 +185,6 @@ export function CardEditCliente({ cliente, onCancel, isOpen, onSubmit }: Cliente
                             </div>
                         </div>
                     </div>
-
                     <DialogFooter className="bg-muted/30 border-t px-6 py-4 flex items-center justify-end gap-2">
                         <DialogClose asChild>
                             <Button type="button" variant="outline" onClick={onCancel} className="shadow-sm">
