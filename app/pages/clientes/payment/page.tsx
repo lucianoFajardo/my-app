@@ -10,6 +10,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     DollarSign,
     Search,
@@ -20,7 +21,6 @@ import {
     CalendarDays,
     ChevronLeft,
     Book,
-    Pencil
 } from 'lucide-react';
 import { DialogPayment } from './dialog-payment';
 
@@ -60,13 +60,14 @@ export default function DashboardClientes() {
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const deferredQuery = useDeferredValue(query);
+    const [statusFilter, setStatusFilter] = useState('TODOS');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [selectedClient, setSelectedClient] = useState<ClientPaymentInfo | undefined>(undefined);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-    const loadData = async (page = currentPage, search = deferredQuery) => {
+    const loadData = async (page = currentPage, search = deferredQuery, status = statusFilter) => {
         setLoading(true);
         try {
             const from = (page - 1) * PAGE_SIZE;
@@ -74,7 +75,8 @@ export default function DashboardClientes() {
             const result = await DataClientPaymentInfo({
                 from,
                 to,
-                searchParam: search.trim() || undefined
+                searchParam: search.trim() || undefined,
+                statusParam: status
             });
             setClients(result.data);
             setTotalCount(result.count);
@@ -87,12 +89,12 @@ export default function DashboardClientes() {
     };
     useEffect(() => {
         setCurrentPage(1);
-    }, [deferredQuery]);
+    }, [deferredQuery, statusFilter]);
 
     useEffect(() => {
-        loadData(currentPage, deferredQuery);
+        loadData(currentPage, deferredQuery, statusFilter);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage, deferredQuery]);
+    }, [currentPage, deferredQuery, statusFilter]);
 
     const handleOpenPayment = async (clientId: string) => {
         try {
@@ -113,16 +115,13 @@ export default function DashboardClientes() {
         }
     };
 
-    const handlePaySuccess = async (client: ClientPaymentInfo, paidMonthDates: string[]) => {
+    const handlePaySuccess = async (client: ClientPaymentInfo) => {
         setSelectedClient(client);
-
         try {
             await loadData(currentPage, deferredQuery);
         } catch (error) {
             console.error('Error al refrescar la lista de pagos:', error);
         }
-
-        console.log('Pago exitoso para el cliente:', client, 'Fechas pagadas:', paidMonthDates, 'Cubierto hasta:', client.paid_until_date);
     };
 
     const upToDateCount = clients.filter((client) => client.status_pay_client === 'AL DÍA').length;
@@ -201,8 +200,8 @@ export default function DashboardClientes() {
                             </CardDescription>
                         </div>
 
-                        <div className="w-full md:max-w-sm">
-                            <div className="relative">
+                        <div className="flex w-full flex-col gap-3 md:max-w-lg md:flex-row md:items-center">
+                            <div className="relative w-full md:w-64">
                                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     value={query}
@@ -210,6 +209,20 @@ export default function DashboardClientes() {
                                     placeholder="Buscar cliente o estado..."
                                     className="h-10 rounded-xl border-border/70 bg-background pl-9"
                                 />
+                            </div>
+                            {/* FN para poder filtrar por los estados del cliente */}
+                            <div className="w-full md:w-48">
+                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    <SelectTrigger className="h-10 rounded-xl border-border/70 bg-background">
+                                        <SelectValue placeholder="Filtrar por estado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="TODOS">Todos los estados</SelectItem>
+                                        <SelectItem value="AL DÍA">Al día</SelectItem>
+                                        <SelectItem value="MOROSO">Morosos</SelectItem>
+                                        <SelectItem value="PERIODO DE GRACIA">Periodo de Gracia</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </CardHeader>

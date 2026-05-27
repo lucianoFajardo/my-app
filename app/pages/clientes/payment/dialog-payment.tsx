@@ -9,6 +9,7 @@ import { getAllPaymentMonths } from "../actions/status-plan-action";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { DialogWhatsapp } from "../show-data/dialog-whatsapp";
 
 type DialogPaymentProps = {
     isOpen: boolean;
@@ -20,6 +21,8 @@ type DialogPaymentProps = {
 export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPaymentProps) {
     const [loading, setLoading] = useState(false);
     const [selectedDates, setSelectedDates] = useState<string[]>([]);
+    const [isWhatsappOpen, setIsWhatsappOpen] = useState(true);
+
     //* --> Estado para controlar qué acordeón está abierto por defecto
     const [openSections, setOpenSections] = useState({
         overdue: true,
@@ -91,6 +94,11 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                             <br />Plan Base: <span className="font-semibold text-primary">${data.plan}</span>
                             <br />Fecha de Instalación: <span className="font-medium text-foreground">{new Date(data.initial_payment).toLocaleDateString()}</span>
                         </DialogDescription>
+                        <Button 
+                        variant="outline" 
+                        className="shadow-sm border-border/80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 p-2 mt-3"
+                        onClick={() => setIsWhatsappOpen(true)}
+                    >Abrir WhatsApp</Button>
                     </div>
                 </DialogHeader>
 
@@ -186,6 +194,17 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     </Button>
                 </div>
             </DialogContent>
+            <DialogWhatsapp 
+            isOpen={isWhatsappOpen} 
+            onClose={() => setIsWhatsappOpen(false)} 
+            name={`${data.name} ${data.lastname}`}
+            phone={data.phone1}
+            messageRecibe={`Hola ${data.name}, espero que estés bien.
+                Quería comunicarme contigo para hablar sobre tu servicio de internet. 
+                Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje. 
+                ¡Gracias por ser parte de nuestra comunidad!`
+            }
+            />
         </Dialog>
     );
 }

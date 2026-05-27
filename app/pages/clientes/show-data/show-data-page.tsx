@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { ClienteModel } from "../models/client-model"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,7 @@ import {
     StickyNote,
     MonitorSmartphone,
     Building2,
+    MessageCircle
 } from "lucide-react"
 import {
     Map,
@@ -23,6 +25,7 @@ import {
     MapZoomControl,
 } from "@/components/ui/map"
 import { DialogDescription } from "@radix-ui/react-dialog"
+import { DialogWhatsapp } from "./dialog-whatsapp"
 
 interface ShowDataPageProps {
     props: ClienteModel
@@ -46,6 +49,7 @@ const DataRow = ({ icon: Icon, label, value, highlight = false }: { icon: React.
 export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataPageProps) {
     const latitude = parseFloat(props.latitude);
     const longitude = parseFloat(props.longitude);
+    const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -146,12 +150,33 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                 </div>
 
                 {/* Footer estético */}
-                <DialogFooter className="bg-muted/30 border-t px-6 py-4 flex items-center justify-end">
+                <DialogFooter className="bg-muted/30 border-t px-6 py-4 flex items-center justify-between sm:justify-between">
+                    <Button 
+                        variant="outline" 
+                        className="shadow-sm border-border/80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
+                        onClick={() => setIsWhatsappOpen(true)}
+                    >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Enviar WhatsApp
+                    </Button>
                     <Button variant="outline" onClick={onClose} className="shadow-sm border-border/80">
                         Cerrar Detalles
                     </Button>
                 </DialogFooter>
             </DialogContent>
+            
+            {/* Modal de WhatsApp para no sobrecargar este */}
+            <DialogWhatsapp 
+                isOpen={isWhatsappOpen} 
+                onClose={() => setIsWhatsappOpen(false)} 
+                name={`${props.name} ${props.lastname}`}
+                phone={props.phone1}
+                messageRecibe={`Hola ${props.name}, espero que estés bien.
+                    Quería comunicarme contigo para hablar sobre tu servicio de internet. 
+                    Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje. 
+                    ¡Gracias por ser parte de nuestra comunidad!`
+                }   
+            />
         </Dialog>
     )
 }

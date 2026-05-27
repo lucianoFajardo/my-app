@@ -9,9 +9,9 @@ export type Payment = {
 export interface ViewStateClientPaymentInfoInterface {
     id_client: string;
     client: string;
-    day_static_pay: string; // Las fechas desde Supabase llegan como string en formato ISO/YYYY-MM-DD
+    day_static_pay: string; //* --> Las fechas desde Supabase llegan como string en formato ISO/YYYY-MM-DD
     covered_up_to: string;
     payment_range: string;
-    // Usamos una unión de tipos para que TypeScript solo acepte estos tres textos exactos
+    //* --> Usamos una unión de tipos para que TypeScript solo acepte estos tres textos exactos
     status_pay_client: 'AL DÍA' | 'PERIODO DE GRACIA' | 'MOROSO';
 }

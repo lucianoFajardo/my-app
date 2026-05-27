@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ClientPaymentInfo } from "../models/client-model";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -6,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
 import { Payment } from "../models/payment-model";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { DialogWhatsapp } from "../show-data/dialog-whatsapp";
 interface ShowPaymentsProps {
     isOpen: boolean;
     onClose: () => void;
@@ -14,6 +18,8 @@ interface ShowPaymentsProps {
 }
 
 export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }: ShowPaymentsProps) {
+    const [isWhatsappOpen, setIsWhatsappOpen] = useState(true);
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose} >
             <DialogContent className="max-w-2xl bg-white">
@@ -25,6 +31,7 @@ export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }:
                         <li>- Plan contratado: ${data.plan}.</li>
                         <li>- Fecha de inicio de pagos: {new Date(data.initial_payment).toLocaleDateString()}.</li>
                     </ul>
+                  
                 </DialogDescription>
                 <div className="space-y-2 mt-4">
                     <ScrollArea className="h-[400px] w-full rounded-md border bg-gray-50 p-4">

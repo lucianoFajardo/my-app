@@ -24,7 +24,11 @@ export default async function readClientDataAction({ from, to, searchParam }: { 
 export async function getClientById(id: string): Promise<ClienteModel | null> {
     try {
         const supabase = await createClient();
-        const { data, error } = await supabase.from('clients').select('*').eq('id_client', id).single();
+        const { data, error } = await supabase
+            .from('clients')
+            .select('*')
+            .eq('id_client', id)
+            .single();
         if (error) {
             throw error;
         }
@@ -63,11 +67,13 @@ export interface ClientPaymentPageResult {
 export const DataClientPaymentInfo = async ({
     from,
     to,
-    searchParam
+    searchParam,
+    statusParam
 }: {
     from: number;
     to: number;
-    searchParam?: string
+    searchParam?: string;
+    statusParam?: string;
 }): Promise<ClientPaymentPageResult> => {
     try {
         const supabase = await createClient();
@@ -75,6 +81,11 @@ export const DataClientPaymentInfo = async ({
         let query = supabase.from('view_control_services_payment')
             .select('*', { count: 'exact' })
             .order('covered_up_to', { ascending: true });
+
+        if (statusParam && statusParam.trim() !== '' && statusParam !== 'TODOS') {
+            query = query.eq('status_pay_client', statusParam);
+        }
+
         //* --> Filtro de búsqueda (Adaptado a las columnas de tu vista)
         if (searchParam?.trim()) {
             query = query.or(`client.ilike.%${searchParam}%,status_pay_client.ilike.%${searchParam}%`);

@@ -45,7 +45,7 @@ export default function DataShowComponent() {
 
     useEffect(() => {
         setLoading(true);
-        getPendingPaymentsAction()
+        // getPendingPaymentsAction()
         const fetchData = async () => {
             try {
                 const [resUsers, resAmount, resInstall] = await Promise.all([
@@ -56,7 +56,6 @@ export default function DataShowComponent() {
                 setUserTotal(Number(resUsers?.data ?? resUsers));
                 setAmountTotal(Number(resAmount ?? 0));
                 setInstallationsToday(Number(resInstall));
-                console.log("Users:", resUsers, "Amount:", resAmount, "Install:", resInstall);
                 setLoading(false);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_) {
@@ -170,7 +169,7 @@ export default function DataShowComponent() {
 
                     {/* CHARTS SECTIONS */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Tabla de Deudores (Ocupa 2/3 del espacio) */}
+                        {/* Tabla de Deudores */}
                         <Card className="lg:col-span-2 shadow-sm border-red-100 overflow-hidden">
                             <CardHeader className="flex flex-row items-center justify-between border-b bg-red-50/50 pb-4">
                                 <div className="flex items-center gap-3">
