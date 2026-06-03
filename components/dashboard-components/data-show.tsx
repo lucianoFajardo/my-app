@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react'
 import {
     Users, DollarSign, Clock,
     Calendar, ArrowUpRight,
-    X, AlertTriangle, ArrowDownRight,
-    User, Wifi, AlertCircle, CreditCard, CalendarDays, MapPin, Router as RouterIcon
+    X, ArrowDownRight,
+    User, CalendarDays, MapPin, Router as RouterIcon
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,18 +13,10 @@ import { useRouter } from 'next/navigation'
 import totalInstallationsAction from '@/app/dashboard/actions/total-installations'
 import totalAmountMonthsAction from '@/app/dashboard/actions/total-amount'
 import totalClientsAction from '@/app/dashboard/actions/total-clients'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { getPendingPaymentsAction } from '@/app/dashboard/actions/pending-payments-action'
+import { pendingPaymentModel } from '@/app/dashboard/model/pending-payment-model'
+import { showOutstandingPayments } from './table-payment-data-component'
 
-
-// --- DATOS FICTICIOS PARA LAS GRÁFICAS ---
-const debtorsData = [
-    { id: 1, name: 'Juan Pérez', plan: 'Plan 50MB', amount: 1500, daysLate: 5 },
-    { id: 2, name: 'María Gómez', plan: 'Plan 100MB', amount: 2200, daysLate: 12 },
-    { id: 3, name: 'Carlos López', plan: 'Plan 50MB', amount: 1500, daysLate: 3 },
-    { id: 4, name: 'Ana Silva', plan: 'Plan 200MB', amount: 3500, daysLate: 20 },
-    { id: 5, name: 'Pedro Martínez', plan: 'Plan 50MB', amount: 1500, daysLate: 2 },
-]
 // Agrega esto debajo de debtorsData y borra dataPie
 const pendingRemovalsData = [
     { id: 101, name: 'Roberto Díaz', zone: 'Centro', dateRequest: '12/05/2026', equipment: 'Antena + Router' },
@@ -35,29 +27,29 @@ const pendingRemovalsData = [
 
 // TODO -< creamos fn en el backend para obtner valores y optimizar el rendimiento del dashboard
 
-
 export default function DataShowComponent() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [usersTotal, setUserTotal] = useState(0);
     const [installationsToday, setInstallationsToday] = useState(0);
     const [amountTotal, setAmountTotal] = useState(0);
-
+    const [pendingPaymentsData, setPendingPaymentsData] = useState<pendingPaymentModel[]>([]);
     useEffect(() => {
         setLoading(true);
-        // getPendingPaymentsAction()
         const fetchData = async () => {
             try {
-                const [resUsers, resAmount, resInstall] = await Promise.all([
+                const [resUsers, resAmount, resInstall, paymentPending] = await Promise.all([
                     totalClientsAction(),
                     totalAmountMonthsAction(),
-                    totalInstallationsAction()
+                    totalInstallationsAction(),
+                    getPendingPaymentsAction()
                 ]);
                 setUserTotal(Number(resUsers?.data ?? resUsers));
                 setAmountTotal(Number(resAmount ?? 0));
                 setInstallationsToday(Number(resInstall));
+                setPendingPaymentsData(paymentPending ?? []);
                 setLoading(false);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_) {
                 setLoading(false);
                 throw new Error("Error fetching total clients: ");
@@ -170,81 +162,7 @@ export default function DataShowComponent() {
                     {/* CHARTS SECTIONS */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Tabla de Deudores */}
-                        <Card className="lg:col-span-2 shadow-sm border-red-100 overflow-hidden">
-                            <CardHeader className="flex flex-row items-center justify-between border-b bg-red-50/50 pb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-red-100 text-red-600 rounded-md shadow-sm">
-                                        <AlertTriangle className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <CardTitle className="text-lg font-bold text-red-900">Pagos Pendientes / Vencidos</CardTitle>
-                                        <CardDescription className="text-red-700/80">Clientes que se encuentran con pagos pendientes o vencidos.</CardDescription>
-                                    </div>
-                                </div>
-                                <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-100" onClick={() => router.push('/dashboard/finanzas')}>
-                                    Ver todos
-                                </Button>
-                            </CardHeader>
-                            <CardContent className="p-0 bg-white">
-                                <div className="max-h-[350px] overflow-y-auto">
-                                    <Table>
-                                        <TableHeader className="bg-slate-50 sticky top-0 backdrop-blur-sm z-10 shadow-sm">
-                                            <TableRow>
-                                                <TableHead className="w-[200px] font-semibold text-slate-700">Cliente</TableHead>
-                                                <TableHead className="font-semibold text-slate-700">Plan</TableHead>
-                                                <TableHead className="font-semibold text-slate-700 text-center">Estado</TableHead>
-                                                <TableHead className="text-right font-semibold text-slate-700">Deuda</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {debtorsData.map((debtor) => (
-                                                <TableRow key={debtor.id} className="hover:bg-red-50/30">
-                                                    <TableCell className="font-medium text-slate-900">
-                                                        <div className="flex items-center gap-2.5">
-                                                            <div className="bg-slate-100 p-1.5 rounded-full text-slate-500">
-                                                                <User className="w-4 h-4" />
-                                                            </div>
-                                                            {debtor.name}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-slate-600 text-sm">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <Wifi className="w-3.5 h-3.5 text-slate-400" />
-                                                            {debtor.plan}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {/* Simulación de un 'Badge' de Shadcn UI */}
-                                                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${debtor.daysLate > 10
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : 'bg-amber-100 text-amber-800'
-                                                            }`}>
-                                                            {debtor.daysLate > 10 ? <AlertCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                                            {debtor.daysLate} días
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-bold text-slate-700">
-                                                        <div className="flex items-center justify-end gap-1.5 text-red-600">
-                                                            <CreditCard className="w-4 h-4 text-red-400" />
-                                                            ${debtor.amount.toLocaleString()}
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                            {/* Opcional: Si no hay deudores */}
-                                            {debtorsData.length === 0 && (
-                                                <TableRow>
-                                                    <TableCell colSpan={4} className="h-24 text-center text-slate-500">
-                                                        No hay pagos vencidos actualmente.
-                                                    </TableCell>
-                                                </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-
+                        {showOutstandingPayments({ props: pendingPaymentsData })}
                         {/* Lista de Retiros Pendientes (Ocupa 1/3 del espacio) */}
                         <Card className="shadow-sm flex flex-col h-full relative border-amber-100 overflow-hidden">
                             <CardHeader className="flex flex-row items-center justify-between border-b bg-amber-50/50 pb-4">

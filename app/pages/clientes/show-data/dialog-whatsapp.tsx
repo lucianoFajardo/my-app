@@ -1,29 +1,44 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { MessageCircle } from "lucide-react"
 import { sendWhatsappMessageAction } from "../actions/send-whatsapp-action"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface DialogWhatsappProps {
     isOpen: boolean
     onClose: () => void
     name: string
-    phone: string
+    phone: string | string[] // 1. Aceptamos un string o un array de strings
     messageRecibe: string
 }
 
 export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: DialogWhatsappProps) {
+    // 2. Transforma el prop `phone` en un arreglo de teléfonos por si viene como "numero1, numero2" o como Array
+    const phoneList = Array.isArray(phone) 
+        ? phone 
+        : typeof phone === 'string' 
+            ? phone.split(',').map(n => n.trim()) 
+            : [];
+
     const [message, setMessage] = useState(messageRecibe || '')
+    // 3. Inicializamos el estado del teléfono con el primer número de la lista (o vacío si no hay)
+    const [phoneSelected, setPhoneSelected] = useState(phoneList[0] || "")
+
+    // Actualizar el teléfono si cambian los props
+    useEffect(() => {
+        setPhoneSelected(phoneList[0] || "");
+    }, [phone])
 
     const handleSend = async () => {
         await sendWhatsappMessageAction({
             name,
-            phone,
-            message: messageRecibe || message
+            phone: phoneSelected, // 4. Mandamos directamente el número que eligió en lugar de phoneSelected[0] (que antes solo mandaba el primer carácter del texto)
+            message: message || messageRecibe
         });
         onClose();
         setMessage("");
@@ -38,7 +53,29 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
                         Enviar WhatsApp a {name}
                     </DialogTitle>
                     <DialogDescription>
-                        El mensaje será enviado al número: {phone}
+                            Personaliza el mensaje que deseas enviar a través de WhatsApp seleccionando un numero.
+                    </DialogDescription>
+                    
+                    {/* 5. Agregamos el value y onValueChange al Select para conectarlo al estado de React */}
+                    <Select value={phoneSelected} onValueChange={(value) => setPhoneSelected(value)}>
+                        <SelectTrigger className="w-full max-w-48">
+                            <SelectValue placeholder="Selecciona un número" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Números</SelectLabel>
+                                {/* 6. Iteramos sobre nuestra lista de números */}
+                                {phoneList.map((num, i) => (
+                                    <SelectItem key={i} value={num}>
+                                        {num}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    
+                    <DialogDescription>
+                        El mensaje será enviado al número: <span className="font-semibold">{phoneSelected}</span>
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -57,7 +94,7 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button 
                         onClick={handleSend} 
-                        disabled={!message.trim()}
+                        disabled={!message.trim() || !phoneSelected}
                         className="bg-green-600 hover:bg-green-700 text-white"
                     >
                         Abrir WhatsApp

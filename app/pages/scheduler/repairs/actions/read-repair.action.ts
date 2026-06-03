@@ -15,7 +15,7 @@ export async function readClientDataActionRepair(props: string) {
         if (error) {
             throw new Error(`Error al obtener los datos del cliente: ${error.message}`);
         }
-        return { data, error: null }
+        return { data , error: null};
     } catch (error) {
         throw new Error(`Error al leer los datos del cliente '${error}'`);
     }

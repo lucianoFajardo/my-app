@@ -5,7 +5,7 @@ import { FormInstalModel } from "../models/form-instal-model";
 
 export default async function createInstalationAction(
     dataGet: FormInstalModel) {
-    // recibimos la info y la transfomamos al modelo que necesitamos}
+    //* --> recibimos la info y la transfomamos al modelo que necesitamos
     const supabase = await createClient();
     try {
         const { data, error } = await supabase.from('installations').insert([dataGet]);

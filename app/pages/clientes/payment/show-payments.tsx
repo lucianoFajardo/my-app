@@ -18,7 +18,6 @@ interface ShowPaymentsProps {
 }
 
 export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }: ShowPaymentsProps) {
-    const [isWhatsappOpen, setIsWhatsappOpen] = useState(true);
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose} >
@@ -31,7 +30,6 @@ export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }:
                         <li>- Plan contratado: ${data.plan}.</li>
                         <li>- Fecha de inicio de pagos: {new Date(data.initial_payment).toLocaleDateString()}.</li>
                     </ul>
-                  
                 </DialogDescription>
                 <div className="space-y-2 mt-4">
                     <ScrollArea className="h-[400px] w-full rounded-md border bg-gray-50 p-4">

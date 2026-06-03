@@ -33,7 +33,7 @@ export default function ScheduleRepairPage() {
         setIsSearching(true);
         const delayResults = setTimeout(async () => {
             try {
-                const { data, error } = await readClientDataActionRepair(searchTerm);
+                const {data,error} = await readClientDataActionRepair(searchTerm);
                 if (!error && data) {
                     const valuesArray = Array.from(data.values());
                     setSearchResults(valuesArray);

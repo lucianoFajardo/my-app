@@ -21,7 +21,7 @@ type DialogPaymentProps = {
 export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPaymentProps) {
     const [loading, setLoading] = useState(false);
     const [selectedDates, setSelectedDates] = useState<string[]>([]);
-    const [isWhatsappOpen, setIsWhatsappOpen] = useState(true);
+    const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
 
     //* --> Estado para controlar qué acordeón está abierto por defecto
     const [openSections, setOpenSections] = useState({
@@ -97,14 +97,13 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                         <Button 
                         variant="outline" 
                         className="shadow-sm border-border/80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 p-2 mt-3"
-                        onClick={() => setIsWhatsappOpen(true)}
-                    >Abrir WhatsApp</Button>
+                            onClick={() => setIsWhatsappOpen(true)}
+                        >
+                            Abrir WhatsApp</Button>
                     </div>
                 </DialogHeader>
-
                 <ScrollArea className="max-h-[60vh] px-6 py-4">
                     <div className="space-y-4">
-
                         {/* 1. MESES ADEUDADOS */}
                         <Collapsible open={openSections.overdue} onOpenChange={() => toggleSection('overdue')} className="border rounded-lg bg-destructive/5 overflow-hidden">
                             <CollapsibleTrigger className="flex items-center justify-between w-full p-3 font-medium text-destructive hover:bg-destructive/10 transition-colors">
@@ -198,7 +197,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
             isOpen={isWhatsappOpen} 
             onClose={() => setIsWhatsappOpen(false)} 
             name={`${data.name} ${data.lastname}`}
-            phone={data.phone1}
+            phone={[data.phone1, data.phone2]} //* --> Enviar el array de numeros al componente para que el usuario pueda seleccionar el numero al que enviar el mensaje.
             messageRecibe={`Hola ${data.name}, espero que estés bien.
                 Quería comunicarme contigo para hablar sobre tu servicio de internet. 
                 Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje. 

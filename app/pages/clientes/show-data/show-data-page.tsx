@@ -54,7 +54,7 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl p-0 mx-auto rounded-xl shadow-xl bg-card border-border/60 overflow-hidden">
-                
+
                 {/* Header */}
                 <DialogHeader className="bg-muted/30 px-6 py-5 border-b">
                     <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                     {/* Columna Izquierda: Lista de Datos */}
                     <div className="w-full md:w-[45%] flex flex-col border-r border-border/60 overflow-y-auto">
                         <div className="p-6">
-                            
+
                             <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-2 flex items-center gap-2">
                                 <Info className="w-3.5 h-3.5" /> General & Contacto
                             </h4>
@@ -108,8 +108,6 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                     {/* Columna Derecha: Mapa y Notas */}
                     <div className="w-full md:w-[55%] flex flex-col bg-muted/5 overflow-y-auto">
                         <div className="p-6 space-y-6">
-                            
-                            {/* Notas (Solo si existen) */}
                             {props.observations && (
                                 <div>
                                     <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex items-center gap-2">
@@ -120,39 +118,46 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                                     </div>
                                 </div>
                             )}
-
                             {/* Mapa */}
-                            <div>
-                                <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex flex-wrap items-center justify-between gap-2">
-                                    <span className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Ubicación</span>
-                                    <span className="font-mono text-[10px] lowercase text-muted-foreground/80">
-                                        L: {props.latitude}, l: {props.longitude}
-                                    </span>
-                                </h4>
-                                <div className="w-full h-320px rounded-lg border border-border/80 bg-background overflow-hidden relative shadow-sm">
-                                    <Map center={[latitude, longitude]} zoom={13}>
-                                        <MapTileLayer />
-                                        <MapZoomControl />
-                                        <MapMarker position={[latitude, longitude]}>
-                                            <MapPopup>
-                                                <div className="text-xs">
-                                                    <strong>{props.name} {props.lastname}</strong><br/>
-                                                    {props.antenna_name}
-                                                </div>
-                                            </MapPopup>
-                                        </MapMarker>
-                                    </Map>
-                                </div>
-                            </div>
-
+                            {
+                                props.latitude && props.longitude ? (
+                                    <div>
+                                        <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 flex flex-wrap items-center justify-between gap-2">
+                                            <span className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Ubicación</span>
+                                            <span className="font-mono text-[10px] lowercase text-muted-foreground/80">
+                                                L: {props.latitude}, l: {props.longitude}
+                                            </span>
+                                        </h4>
+                                        <div className="w-full h-320px rounded-lg border border-border/80 bg-background overflow-hidden relative shadow-sm">
+                                            <Map center={[latitude, longitude]} zoom={13}>
+                                                <MapTileLayer />
+                                                <MapZoomControl />
+                                                <MapMarker position={[latitude, longitude]}>
+                                                    <MapPopup>
+                                                        <div className="text-xs">
+                                                            <strong>{props.name} {props.lastname}</strong><br />
+                                                            {props.antenna_name}
+                                                        </div>
+                                                    </MapPopup>
+                                                </MapMarker>
+                                            </Map>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center gap-3 py-15 border border-border/80 rounded-lg bg-background text-muted-foreground">
+                                        <MapPin className="w-6 h-6" />
+                                        <p className="text-sm">No hay coordenadas disponibles para mostrar el mapa.</p>
+                                    </div>
+                                )
+                            }
                         </div>
                     </div>
                 </div>
 
                 {/* Footer estético */}
                 <DialogFooter className="bg-muted/30 border-t px-6 py-4 flex items-center justify-between sm:justify-between">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         className="shadow-sm border-border/80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
                         onClick={() => setIsWhatsappOpen(true)}
                     >
@@ -164,18 +169,18 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                     </Button>
                 </DialogFooter>
             </DialogContent>
-            
-            {/* Modal de WhatsApp para no sobrecargar este */}
-            <DialogWhatsapp 
-                isOpen={isWhatsappOpen} 
-                onClose={() => setIsWhatsappOpen(false)} 
+
+            {/* *--> Modal de WhatsApp para no sobrecargar este */}
+            <DialogWhatsapp
+                isOpen={isWhatsappOpen}
+                onClose={() => setIsWhatsappOpen(false)}
                 name={`${props.name} ${props.lastname}`}
                 phone={props.phone1}
                 messageRecibe={`Hola ${props.name}, espero que estés bien.
                     Quería comunicarme contigo para hablar sobre tu servicio de internet. 
                     Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje. 
                     ¡Gracias por ser parte de nuestra comunidad!`
-                }   
+                }
             />
         </Dialog>
     )

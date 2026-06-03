@@ -5,7 +5,8 @@ import {
   LucideIcon,
   User,
   PencilRulerIcon,
-  ToolCase
+  ToolCase,
+  Trash
 } from "lucide-react";
 
 type Submenu = {
@@ -85,6 +86,25 @@ export function getMenuList(pathname: string): Group[] {
             {
               href: "/pages/scheduler/repairs/form",
               label: "Nuevo Arreglo"
+            },
+            {
+              href: "/pages/scheduler/repairs/edit",
+              label: "Gestionar Arreglos"
+            }
+          ]
+        },
+        {
+          href: "/withdrawals",
+          label: "Retiros",
+          icon: Trash,
+          submenus: [
+            {
+              href: "/pages/scheduler/withdrawals/form",
+              label: "Nuevo Retiro"
+            },
+            {
+              href: "/pages/scheduler/withdrawals/edit",
+              label: "Gestionar Retiros"
             }
           ]
         }

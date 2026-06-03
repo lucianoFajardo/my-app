@@ -7,13 +7,11 @@ export default async function totalInstallationsAction() {
     try {
         const { data, error } = await supabase.rpc('get_installations_today');
         if (error) {
-            return error;
+            throw new Error("Error fetching total installations: " + error.message);
         }
         if (data != null) {
-            console.log("Total installations today:", data);
             return data;
         }
-        
         return 0;
     } catch (error) {
         throw error;

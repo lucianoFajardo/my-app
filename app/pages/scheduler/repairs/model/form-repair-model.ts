@@ -1,5 +1,5 @@
 export interface ClientResultRepairModel {
-    id_client: string;
+    readonly id_client: string;
     name: string;
     lastname: string;
     antenna_name: string;
