@@ -1,4 +1,4 @@
-type InstallationStatus = 'pending' | 'completed' | 'canceled' 
+type InstallationStatus = 'pending' | 'completed' | 'canceled'
 
 export type CalendarModelDataInstal = {
     id_instal: string
@@ -10,3 +10,5 @@ export type CalendarModelDataInstal = {
     address: string
     status: InstallationStatus
 }
+
+export const weekDays = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM']

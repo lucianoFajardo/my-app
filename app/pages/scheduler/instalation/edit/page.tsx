@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CalendarModelDataInstal } from '../models/calendar-instal-model'
+import { CalendarModelDataInstal, weekDays } from '../models/calendar-instal-model'
 import readInstalationAction from '../actions/read-instalation-action'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import updateStatusInstalationAction from '../actions/update-status-instalation-action'
@@ -36,38 +36,35 @@ export default function CalendarDashboardPage() {
     const [isOpenDetails, setIsOpenDetails] = useState(false);
     const [selectDetails, setSelectDetails] = useState<CalendarModelDataInstal>();
     useEffect(() => {
-        // llamamos a la base de datos y alimentamos nuestrar variables
+        //* --> llamamos a la base de datos y alimentamos nuestrar variables
         const fetchData = async () => {
             const res = await readInstalationAction();
-            setInstallations(res) // --> aqui asignamos los datos a una variable que podamos ocupar y mostrar en el calendario
+            setInstallations(res) //* --> aqui asignamos los datos a una variable que podamos ocupar y mostrar en el calendario
         }
         fetchData();
     }, [])
 
-    // Estados para el calendario y fechas que se seleccionan 
+    //* --> Estados para el calendario y fechas que se seleccionan 
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState(new Date())
 
-    // Navegación de meses para cambiar entre los meses del calendarioop
+    //* --> Navegación de meses para cambiar entre los meses del calendario
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
 
-    // Construcción del grid del mes
+    //* --> Construcción del grid del mes
     const monthStart = startOfMonth(currentMonth)
     const monthEnd = endOfMonth(monthStart)
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }) // Lunes como inicio
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
     const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate })
 
-    // Días de la semana para orientar las columnas
-    const weekDays = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM']
-
-    // Instalaciones del día seleccionado (Panel de Detalles) - Filtramos las instalaciones para mostrar solo las del día seleccionado y las ordenamos por hora
+    //* --> Instalaciones del día seleccionado (Panel de Detalles) - Filtramos las instalaciones para mostrar solo las del día seleccionado y las ordenamos por hora
     const selectedDayInstallations = (installations ?? []).filter(inst =>
         isSameDay(parseISO(inst.date_instalation), selectedDate)
     ).sort((a, b) => new Date(a.date_instalation).getTime() - new Date(b.date_instalation).getTime())
 
-    // Estadísticas del resumen mensual
+    //* --> Estadísticas del resumen mensual
     const currentMonthInstallations = (installations ?? []).filter(inst =>
         isSameMonth(parseISO(inst.date_instalation), currentMonth)
     )
@@ -76,7 +73,7 @@ export default function CalendarDashboardPage() {
     const totalFaltan = totalProgramadas - totalListas
     const progressPercentage = totalProgramadas === 0 ? 0 : (totalListas / totalProgramadas) * 100
 
-    //* Accion para marcar una instalacion como completada (actualiza el estado de la instalación)
+    //* --> Accion para marcar una instalacion como completada (actualiza el estado de la instalación)
     const markAsCompleted = (value: CalendarModelDataInstal) => {
         try {
             handleStatusChange(value.id_instal);
@@ -103,7 +100,7 @@ export default function CalendarDashboardPage() {
         setIsOpenDelete(true);
     }
 
-    // Accion para eliminar una instalación (remueve la instalación del estado)
+    //* --> Accion para eliminar una instalación (remueve la instalación del estado)
     const deleteInstallation = async () => {
         await deleteInstallationAction(selectDelete!).then(() => {
             setInstallations(
@@ -126,15 +123,8 @@ export default function CalendarDashboardPage() {
                     <h1 className="text-3xl font-bold text-slate-800">Agenda de Instalaciones</h1>
                     <p className="text-slate-500">Gestiona los horarios y estados de tus servicios programados.</p>
                 </div>
-                {/* <div className="inline-flex items-center rounded-md border p-1 shadow-sm bg-background">
-                    <Button variant="secondary" className="px-6 rounded-sm shadow-none">Mes</Button>
-                    <Button variant="ghost" className="px-6 rounded-sm text-slate-500">Semana</Button>
-                    <Button variant="ghost" className="px-6 rounded-sm text-slate-500">Día</Button>
-                </div> */}
             </div>
-
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
                 {/*================ COLUMNA IZQUIERDA: CALENDARIO DE AGENDAMIENTO) ================*/}
                 <Card className="xl:col-span-2 border-slate-200 shadow-sm rounded-2xl overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between py-6">
@@ -242,7 +232,7 @@ export default function CalendarDashboardPage() {
                                     </div>
                                 ) : (
                                     selectedDayInstallations.map(inst => (
-                                        // Tarjeta de cada instalación del día seleccionado (Agregar un boton para ver mas especificamente la informacion de la persona)
+                                        //* --> Tarjeta de cada instalación del día seleccionado (Agregar un boton para ver mas especificamente la informacion de la persona)
                                         <div key={inst.id_instal} className="border rounded-xl p-4 shadow-sm bg-white relative m-2 hover:shadow-md transition-shadow hover:bg-slate-50">
                                             <div className="flex justify-between items-center mb-3 p-3 bg-slate-50 rounded-lg">
                                                 <div className="flex items-center text-sm font-medium text-slate-500 gap-1.5">
@@ -267,7 +257,6 @@ export default function CalendarDashboardPage() {
                                                 <MapPin className="w-4 h-4" />
                                                 {inst.address}
                                             </div>
-
                                             {/* Botones de acción dentro de la tarjeta */}
                                             <div className="flex gap-3">
                                                 {inst.status !== 'completed' && (

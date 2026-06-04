@@ -12,31 +12,21 @@ import { User, Phone, MapPin, Calendar, Clock, Activity, MessageSquare, AlertCir
 import { Badge } from '@/components/ui/badge'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { DrawalsViewData } from '../model/drawals-model'
 
-export interface DrawalsViewData {
-    id_withdrawal: string; 
-    name_client: string;
-    phone1: string;
-    phone2?: string;
-    antenna_name: string;
-    day_withdrawal: string;
-    hour_withdrawal: string;
-    reason: string;
-    observations?: string;
-    status: 'programado' | 'completado' | 'cancelado';
-}
+
 
 interface ViewDetailsWithdrawlsProps {
-    open: boolean;
+    IsOpenBool: () => boolean;
     onClose: () => void;
     data: DrawalsViewData | undefined | null;
 }
 
-export default function ViewDetailsWithdrawls({ open, onClose, data }: ViewDetailsWithdrawlsProps) {
+export default function ViewDetailsWithdrawls({ IsOpenBool, onClose, data }: ViewDetailsWithdrawlsProps) {
     if (!data) return null;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <Dialog open={IsOpenBool()} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle className="text-xl text-slate-800 flex items-center gap-2">

@@ -1,91 +1,158 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
+    Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Box, ChevronLeft, ChevronRight, Eye, MapPin, Search, UserMinus } from 'lucide-react';
 import showDataDrawalsAction from '../actions/show-data-drawals';
-import { DrawalsClientModel, DrawalsModel } from '../model/drawals-model';
+import { DrawalsClientModel, DrawalsModel, DrawalsViewData } from '../model/drawals-model';
 import DialogWithdrawls from './dialog-withdrawls';
 import createDataDrawalsAction from '../actions/create-data-drawals';
+import ViewDetailsWithdrawls from './view-details-withdrawls';
 
 export default function CreateWithdrawalsPage() {
     const [client, setClient] = useState<DrawalsClientModel[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState(''); 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<DrawalsClientModel | null>(null);
+    const [selectedWithdrawal, setSelectedWithdrawal] = useState<DrawalsViewData | null>(null);
     const [isWithdrawals, setIsWithdrawals] = useState<string[]>([]);
+    const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
-
     const limit = 15;
 
     useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        let isMounted = true;
         const fetchData = async () => {
             const from = page * limit;
             const to = from + limit - 1;
             setLoading(true);
             try {
-                const data = await showDataDrawalsAction({ from, to, search: searchTerm });
-                setClient(data);
+                const data = await showDataDrawalsAction({ from, to, search: debouncedSearch });
+                if (isMounted) setClient(data);
             } catch (error) {
-                throw new Error(`Error al cargar los clientes para los retiros programados: ${error}`);
+                console.error(`Error al cargar los clientes: ${error}`);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
-
         fetchData();
-    }, [page, searchTerm]);
 
-    const handleOpenDialog = (cliente: DrawalsClientModel) => {
+        return () => { isMounted = false; };
+    }, [page, debouncedSearch]);
+
+    const handleOpenDialog = useCallback((cliente: DrawalsClientModel) => {
         setSelectedClient(cliente);
         setIsDialogOpen(true);
-    };
+    }, []);
 
-    const onSubmitData = async (data: DrawalsModel) => {
+    const handleOpenViewDetails = useCallback((cliente: DrawalsClientModel) => {
+        const withdrawalDetails: DrawalsViewData = {
+            id_withdrawal: cliente.id_client,
+            name_client: cliente.name,
+            phone1: cliente.phone1,
+            phone2: cliente.phone2,
+            antenna_name: cliente.antenna_name,
+            day_withdrawal: cliente.day_withdrawal ? new Date(cliente.day_withdrawal).toDateString() : new Date().toDateString(),
+            hour_withdrawal: cliente.hour_withdrawal || 'N/A',
+            reason: 'Mantenimiento programado',
+            observations: cliente.observations || 'Ninguna nota agregada',
+            status: cliente.status ? 'programado' : 'activo',
+        };
+        setSelectedWithdrawal(withdrawalDetails);
+        setIsViewDetailsOpen(true);
+    }, []);
+
+    const onSubmitData = useCallback(async (data: DrawalsModel) => {
+        if (!selectedClient?.id_client) return null;
+
         const result = await createDataDrawalsAction({
             ...data,
-            id_client: selectedClient?.id_client || '',
+            id_client: selectedClient.id_client,
         });
 
-        if (selectedClient?.id_client) {
-            setIsWithdrawals((prev) => [...prev, result.id_client]);
+        setIsWithdrawals((prev) => [...prev, result.id_client]);
+        setIsDialogOpen(false);
+        setTimeout(() => setSelectedClient(null), 200); 
+        return result;
+    }, [selectedClient]);
+
+    const handleNextPage = useCallback(() => setPage((prev) => prev + 1), []);
+    const handlePreviousPage = useCallback(() => setPage((prev) => Math.max(0, prev - 1)), []);
+
+    const renderedTableRows = useMemo(() => {
+        const filteredClient = client.filter((currentClient) =>
+            currentClient.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        if (filteredClient.length === 0) {
+            return (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-32 text-center text-slate-400">
+                        No se encontraron clientes que coincidan con la búsqueda.
+                    </TableCell>
+                </TableRow>
+            );
         }
 
-        setIsDialogOpen(false);
-        setSelectedClient(null);
-
-        return result;
-    };
-
-    const filteredClient = client.filter((currentClient) =>
-        currentClient.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const handleNextPage = () => {
-        setPage((prevPage) => prevPage + 1);
-    };
-
-    const handlePreviousPage = () => {
-        setPage((prevPage) => (prevPage > 0 ? prevPage - 1 : 0));
-    };
+        return filteredClient.map((currentClient) => {
+            const isWithdrawal = currentClient.status || isWithdrawals.includes(currentClient.id_client);
+            return (
+                <TableRow
+                    key={currentClient.id_client}
+                    className={`border-slate-100 transition-colors ${isWithdrawal ? 'border border-red-200 bg-red-100' : 'hover:bg-slate-50/50'}`}
+                >
+                    <TableCell className="px-6 py-4">
+                        <span className="font-medium text-slate-800">{currentClient.name}</span>
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                        <span className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                            <MapPin className="h-3 w-3" /> {currentClient.antenna_name}
+                        </span>
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                        <span className="inline-flex items-center rounded-full border border-indigo-100/50 bg-indigo-50/80 px-2.5 py-1 text-[13px] font-medium text-indigo-600">
+                            {currentClient.phone2 ? `${currentClient.phone1} / ${currentClient.phone2}` : currentClient.phone1}
+                        </span>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                variant="ghost"
+                                className="hidden h-9 gap-2 rounded-md bg-blue-50 px-3 text-blue-600 hover:bg-blue-100 hover:text-blue-700 md:flex"
+                                onClick={() => handleOpenViewDetails(currentClient)}
+                            >
+                                <Eye className="h-4 w-4" /> Detalles
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                disabled={isWithdrawal}
+                                className={`h-9 gap-2 rounded-md px-3 ${isWithdrawal ? 'cursor-not-allowed bg-slate-200 text-slate-400' : 'bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700'}`}
+                                onClick={() => handleOpenDialog(currentClient)}
+                            >
+                                <Box className="h-4 w-4" />
+                                {isWithdrawal ? 'Retiro Agendado' : 'Agendar Retiro'}
+                            </Button>
+                        </div>
+                    </TableCell>
+                </TableRow>
+            );
+        });
+    }, [client, searchTerm, isWithdrawals, handleOpenViewDetails, handleOpenDialog]);
 
     if (loading) {
         return (
@@ -136,129 +203,41 @@ export default function CreateWithdrawalsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredClient.length > 0 ? (
-                                    filteredClient.map((currentClient) => {
-                                        const isWithdrawal = currentClient.status || isWithdrawals.includes(currentClient.id_client);
-
-                                        return (
-                                            <TableRow
-                                                key={currentClient.id_client}
-                                                className={`border-slate-100 transition-colors ${
-                                                    isWithdrawal ? 'border border-red-200 bg-red-100' : 'hover:bg-slate-50/50'
-                                                }`}
-                                            >
-                                                <TableCell className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium text-slate-800">{currentClient.name}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4">
-                                                    <span className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                                                        <MapPin className="h-3 w-3" /> {currentClient.antenna_name}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4">
-                                                    <span className="inline-flex items-center rounded-full border border-indigo-100/50 bg-indigo-50/80 px-2.5 py-1 text-[13px] font-medium text-indigo-600">
-                                                        {currentClient.phone2
-                                                            ? `${currentClient.phone1} / ${currentClient.phone2}`
-                                                            : currentClient.phone1}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="px-6 py-4 text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            className="hidden h-9 gap-2 rounded-md bg-blue-50 px-3 text-blue-600 hover:bg-blue-100 hover:text-blue-700 md:flex"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                            Detalles
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            disabled={isWithdrawal}
-                                                            className={`h-9 gap-2 rounded-md px-3 ${
-                                                                isWithdrawal
-                                                                    ? 'cursor-not-allowed bg-slate-200 text-slate-400'
-                                                                    : 'bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700'
-                                                            }`}
-                                                            onClick={() => handleOpenDialog(currentClient)}
-                                                        >
-                                                            <Box className="h-4 w-4" />
-                                                            {isWithdrawal ? 'Retiro Agendado' : 'Agendar Retiro'}
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-32 text-center text-slate-400">
-                                            No se encontraron clientes que coincidan con la busqueda.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
+                                {renderedTableRows}
                             </TableBody>
                         </Table>
                     </div>
-
-                    <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/30 p-4 px-6">
-                        <span className="text-sm font-medium text-slate-600">Pagina Actual {page + 1}</span>
-                        <div className="flex gap-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 border-slate-200 text-slate-400"
-                                disabled={page === 0}
-                                onClick={handlePreviousPage}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 border-slate-200 text-slate-600"
-                                disabled={client.length < limit}
-                                onClick={handleNextPage}
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
                 </CardContent>
-
                 <CardFooter className="flex flex-col items-center justify-between gap-4 border-t bg-muted/20 px-6 py-4 sm:flex-row">
                     <span className="text-sm font-medium text-muted-foreground">Pagina Actual {page + 1}</span>
                     <div className="flex items-center gap-1 rounded-md border bg-background shadow-sm">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handlePreviousPage}
-                            disabled={page === 0}
-                            className="h-8 w-8 rounded-r-none hover:bg-muted"
-                        >
+                        <Button variant="ghost" size="icon" onClick={handlePreviousPage} disabled={page === 0} className="h-8 w-8 rounded-r-none hover:bg-muted">
                             <ChevronLeft className="h-4 w-4 text-foreground" />
                         </Button>
                         <div className="h-4 w-px bg-border" />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleNextPage}
-                            disabled={client.length < limit}
-                            className="h-8 w-8 rounded-l-none hover:bg-muted"
-                        >
+                        <Button variant="ghost" size="icon" onClick={handleNextPage} disabled={client.length < limit} className="h-8 w-8 rounded-l-none hover:bg-muted">
                             <ChevronRight className="h-4 w-4 text-foreground" />
                         </Button>
                     </div>
                 </CardFooter>
             </Card>
 
+            {/* { Modal para retiros y desplegar un openDialog} */}
             {selectedClient && (
                 <DialogWithdrawls
                     isOpen={() => isDialogOpen}
                     isClose={() => setIsDialogOpen(false)}
                     onSubmit={onSubmitData}
                     props={selectedClient}
+                />
+            )}
+
+            {/* {Modal para ver detalles de retiros , desplegando un dialog} */}
+            {selectedWithdrawal && isViewDetailsOpen && (
+                <ViewDetailsWithdrawls
+                    IsOpenBool={() => isViewDetailsOpen}
+                    onClose={() => setIsViewDetailsOpen(false)}
+                    data={selectedWithdrawal}
                 />
             )}
         </div>
