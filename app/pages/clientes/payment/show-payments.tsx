@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ClientPaymentInfo } from "../models/client-model";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -6,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
 import { Payment } from "../models/payment-model";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { DialogWhatsapp } from "../show-data/dialog-whatsapp";
 interface ShowPaymentsProps {
     isOpen: boolean;
     onClose: () => void;
@@ -14,6 +18,7 @@ interface ShowPaymentsProps {
 }
 
 export default function ShowPayments({ isOpen, onClose, data, onDeletePayment }: ShowPaymentsProps) {
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose} >
             <DialogContent className="max-w-2xl bg-white">

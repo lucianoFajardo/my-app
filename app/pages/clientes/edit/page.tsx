@@ -263,7 +263,7 @@ export default function EditDateClientPage() {
                         >
                             <ChevronLeft className="w-4 h-4 text-foreground" />
                         </Button>
-                        <div className="w-[1px] h-4 bg-border"></div>
+                        <div className="w-1px h-4 bg-border"></div>
                         <Button
                             variant="ghost"
                             size="icon"

@@ -7,7 +7,7 @@ export default async function createRepairAction(props: RepairFormModel) {
     const supabase = await createClient();
     try {
         const { data, error } = await supabase.from('repairs').insert({
-            client_key: props.client_Key,
+            client_key: props.client_key,
             date_repair: props.date_repair,
             hour_repair: props.hour_repair,
             notes: props.notes,

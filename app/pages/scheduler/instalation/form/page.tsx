@@ -16,18 +16,22 @@ import {
     SelectValue
 } from '@/components/ui/select';
 
-import { Inspect, CalendarDays, MapPin, User, FileText } from 'lucide-react';
+import { Inspect, CalendarDays, MapPin, User, FileText, CheckCircle2 } from 'lucide-react';
 import createInstalationAction from '../actions/create-instalation-action';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function InstalationPage() {
     const { register, handleSubmit, control, formState: { errors }, reset } = useForm<FormInstalModel>();
     const [isLoading, setIsLoading] = useState(false);
+    const [isCreated, setIsCreated] = useState(false);
+
     const onSubmit = async (props: FormInstalModel) => {
         setIsLoading(true);
         await createInstalationAction(props).then(() => {
             reset();
             setTimeout(() => {
                 setIsLoading(false);
+                setIsCreated(true);
                 reset();
             }, 1000);
         }).catch(() => {
@@ -150,6 +154,17 @@ export default function InstalationPage() {
                                 />
                             </div>
                         </div>
+                        {isCreated && (
+                            <Alert className="border-green-500 bg-green-50 text-green-900">
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                <AlertTitle className="text-green-800 font-semibold mb-1">
+                                    ¡Éxito!
+                                </AlertTitle>
+                                <AlertDescription className="text-green-700 text-sm">
+                                    Instalación registrada exitosamente.
+                                </AlertDescription>
+                            </Alert>
+                        )}
                         <div className="pt-4 flex justify-end">
                             <Button type='submit' className="w-full md:w-auto" disabled={isLoading}>
                                 {isLoading ? 'Registrando...' : 'Registrar Instalación'}

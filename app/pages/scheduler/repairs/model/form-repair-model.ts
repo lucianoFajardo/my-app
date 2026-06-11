@@ -1,8 +1,8 @@
 export interface ClientResultRepairModel {
-    id_client: string;
+    readonly id_client: string;
     name: string;
     lastname: string;
-    antennaName: string;
+    antenna_name: string;
     latitude?: string;
     longitude?: string;
     phone1?: string;
@@ -10,7 +10,7 @@ export interface ClientResultRepairModel {
 }
 
 export interface RepairFormModel {
-    client_Key: string;
+    client_key: string;
     date_repair: Date;
     status?: string;
     hour_repair: string;
