@@ -18,7 +18,6 @@ interface DialogWhatsappProps {
 }
 
 export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: DialogWhatsappProps) {
-    // 2. Transforma el prop `phone` en un arreglo de teléfonos por si viene como "numero1, numero2" o como Array
     const phoneList = Array.isArray(phone) 
         ? phone 
         : typeof phone === 'string' 
@@ -26,10 +25,8 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
             : [];
 
     const [message, setMessage] = useState(messageRecibe || '')
-    // 3. Inicializamos el estado del teléfono con el primer número de la lista (o vacío si no hay)
     const [phoneSelected, setPhoneSelected] = useState(phoneList[0] || "")
 
-    // Actualizar el teléfono si cambian los props
     useEffect(() => {
         setPhoneSelected(phoneList[0] || "");
     }, [phone])
@@ -37,7 +34,7 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
     const handleSend = async () => {
         await sendWhatsappMessageAction({
             name,
-            phone: phoneSelected, // 4. Mandamos directamente el número que eligió en lugar de phoneSelected[0] (que antes solo mandaba el primer carácter del texto)
+            phone: phoneSelected, 
             message: message || messageRecibe
         });
         onClose();
@@ -55,9 +52,7 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
                     <DialogDescription>
                             Personaliza el mensaje que deseas enviar a través de WhatsApp seleccionando un numero.
                     </DialogDescription>
-                    
-                    {/* 5. Agregamos el value y onValueChange al Select para conectarlo al estado de React */}
-                    <Select value={phoneSelected} onValueChange={(value) => setPhoneSelected(value)}>
+                        <Select value={phoneSelected} onValueChange={(value) => setPhoneSelected(value)}>
                         <SelectTrigger className="w-full max-w-48">
                             <SelectValue placeholder="Selecciona un número" />
                         </SelectTrigger>
@@ -84,7 +79,7 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
                         <Textarea
                             id="message"
                             placeholder="Escribe tu mensaje aquí..."
-                            value={message}
+                            value={message.trim().split(/\s+/)? message : messageRecibe} // Si el mensaje está vacío, mostramos el mensaje recibido
                             onChange={(e) => setMessage(e.target.value)}
                             className="min-h-[120px] resize-none"
                         />

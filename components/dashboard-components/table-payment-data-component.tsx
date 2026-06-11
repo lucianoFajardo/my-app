@@ -1,9 +1,9 @@
+
 import { AlertCircle, AlertTriangle, User, Wifi } from "lucide-react";
-import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import router from "next/router";
 import { pendingPaymentModel } from "@/app/dashboard/model/pending-payment-model";
+import Link from "next/link";
 
 interface showOutstandingPaymentsProps {
     props: pendingPaymentModel[];
@@ -21,9 +21,10 @@ export function showOutstandingPayments({ props }: showOutstandingPaymentsProps)
                     <CardDescription className="text-red-700/80">Clientes que se encuentran con pagos pendientes o vencidos.</CardDescription>
                 </div>
             </div>
-            <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-100" onClick={() => router.push('/pages/clientes/payment')}>
-                Ver todos
-            </Button>
+            <Link href="/pages/clientes/payment" className="border-red-200 text-red-700 hover:bg-red-100 px-3 py-1 rounded-md text-sm font-medium">
+                Ver Instalaciones
+            </Link>
+
         </CardHeader>
         <CardContent className="p-0 bg-white">
             <div className="max-h-[350px] overflow-y-auto">
@@ -56,7 +57,7 @@ export function showOutstandingPayments({ props }: showOutstandingPaymentsProps)
                                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold 
                                                         ${debtor.status_pay_client === 'AL DÍA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                         {/* {debtor.covered_up_to > 10 ? <AlertCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />} */}
-                                        {debtor.covered_up_to ? <p className='text-green-700'>Al dia</p> : <p className='text-red-700'>Vencido</p>}
+                                        {debtor.covered_up_to ? <p className='text-red-700'>Vencido</p> : <p className='text-green-700'>Al día</p>}
                                     </div>
                                 </TableCell>
 

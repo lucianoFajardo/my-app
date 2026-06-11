@@ -1,53 +1,50 @@
-"use client"
+'use client'
+
 import React, { useEffect, useState } from 'react'
 import {
     Users, DollarSign, Clock,
     Calendar, ArrowUpRight,
     X, ArrowDownRight,
-    User, CalendarDays, MapPin, Router as RouterIcon
+    SparklesIcon,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { isToday } from 'date-fns'
-import { useRouter } from 'next/navigation'
 import totalInstallationsAction from '@/app/dashboard/actions/total-installations'
 import totalAmountMonthsAction from '@/app/dashboard/actions/total-amount'
 import totalClientsAction from '@/app/dashboard/actions/total-clients'
 import { getPendingPaymentsAction } from '@/app/dashboard/actions/pending-payments-action'
 import { pendingPaymentModel } from '@/app/dashboard/model/pending-payment-model'
 import { showOutstandingPayments } from './table-payment-data-component'
-
-// Agrega esto debajo de debtorsData y borra dataPie
-const pendingRemovalsData = [
-    { id: 101, name: 'Roberto Díaz', zone: 'Centro', dateRequest: '12/05/2026', equipment: 'Antena + Router' },
-    { id: 102, name: 'Laura Vargas', zone: 'Norte', dateRequest: '10/05/2026', equipment: 'Solo Antena' },
-    { id: 103, name: 'Mario Silva', zone: 'Sur', dateRequest: '14/05/2026', equipment: 'Router' },
-]
+import Link from 'next/link';
+import { getTotalWithdrawalsAction } from '@/app/dashboard/actions/total-withdrawals-action'
 
 
-// TODO -< creamos fn en el backend para obtner valores y optimizar el rendimiento del dashboard
 
 export default function DataShowComponent() {
-    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [usersTotal, setUserTotal] = useState(0);
     const [installationsToday, setInstallationsToday] = useState(0);
     const [amountTotal, setAmountTotal] = useState(0);
     const [pendingPaymentsData, setPendingPaymentsData] = useState<pendingPaymentModel[]>([]);
+    const [withdrawals, setWithdrawals] = useState([]); // Estado para almacenar los datos de retiros
+
     useEffect(() => {
         setLoading(true);
         const fetchData = async () => {
             try {
-                const [resUsers, resAmount, resInstall, paymentPending] = await Promise.all([
+                const [resUsers, resAmount, resInstall, paymentPending, resWithdrawals] = await Promise.all([
                     totalClientsAction(),
                     totalAmountMonthsAction(),
                     totalInstallationsAction(),
-                    getPendingPaymentsAction()
+                    getPendingPaymentsAction(),
+                    getTotalWithdrawalsAction()
                 ]);
                 setUserTotal(Number(resUsers?.data ?? resUsers));
                 setAmountTotal(Number(resAmount ?? 0));
                 setInstallationsToday(Number(resInstall));
                 setPendingPaymentsData(paymentPending ?? []);
+                setWithdrawals(resWithdrawals ?? []); // Almacenar los datos de retiros en el estado
                 setLoading(false);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_) {
@@ -57,6 +54,7 @@ export default function DataShowComponent() {
         }
         fetchData();
     }, []);
+
 
     if (loading) {
         return (
@@ -82,9 +80,9 @@ export default function DataShowComponent() {
                             <Calendar className="mr-2 h-4 w-4" />
                             {isToday(new Date()) ? new Date().toLocaleDateString() : "--/--/----"}
                         </Button>
-                        <Button className="bg-primary hover:bg-primary/90 text-white" onClick={() => router.push('/pages/scheduler/instalation/form')}>
+                        <Link href="/pages/scheduler/instalation/form" className="bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded-md text-sm font-medium">
                             Registrar Instalación
-                        </Button>
+                        </Link>
                     </div>
                 </div>
 
@@ -150,7 +148,7 @@ export default function DataShowComponent() {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-slate-900">{pendingRemovalsData.length}</div>
+                                <div className="text-2xl font-bold text-slate-900">{withdrawals.length}</div>
                                 <p className="text-xs text-red-600 flex items-center mt-1 font-medium">
                                     <ArrowDownRight className="mr-1 h-3 w-3" />
                                     {/* Requieren atención */}
@@ -176,65 +174,16 @@ export default function DataShowComponent() {
                                     </div>
                                 </div>
                                 <div className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm border border-amber-200">
-                                    {pendingRemovalsData.length}
+                                    {withdrawals.length}
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0 flex-1 bg-white">
-                                <div className="max-h-[350px] overflow-y-auto overflow-x-hidden divide-y divide-slate-100">
-                                    {pendingRemovalsData.map((removal) => (
-                                        <div key={removal.id} className="p-4 hover:bg-amber-50/40 transition-colors">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="bg-amber-100 p-1.5 rounded-full text-amber-600">
-                                                        <User className="w-3.5 h-3.5" />
-                                                    </div>
-                                                    <p className="font-bold text-slate-900 text-sm truncate pr-2" title={removal.name}>
-                                                        {removal.name}
-                                                    </p>
-                                                </div>
-                                                <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded whitespace-nowrap border border-amber-100 flex items-center gap-1.5">
-                                                    <CalendarDays className="w-3 h-3" />
-                                                    {removal.dateRequest}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center mt-3 mb-3">
-                                                <div className="flex items-center text-xs text-slate-600 truncate pr-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                                                    <MapPin className="w-3.5 h-3.5 text-amber-500 mr-1.5 shrink-0" />
-                                                    <span className="truncate">{removal.zone}</span>
-                                                </div>
-                                                <div className="flex items-center text-xs font-medium text-slate-600 truncate bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                                                    <RouterIcon className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
-                                                    {removal.equipment}
-                                                </div>
-                                            </div>
-
-                                            {/* Controles */}
-                                            <div className="grid grid-cols-2 gap-2 mt-3 w-full">
-                                                {/* Botón Ver Detalles */}
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-8 text-[11px] w-full border-slate-200 text-slate-600 hover:text-slate-900"
-                                                    onClick={() => console.log('Ver detalles de', removal.id)}
-                                                >
-                                                    Ver Detalles
-                                                </Button>
-                                                {/* Botón Actualizar a Retirado */}
-                                                <Button
-                                                    size="sm"
-                                                    className="h-8 text-[11px] w-full bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-sm"
-                                                    onClick={() => console.log('Marcar como retirado a', removal.id)}
-                                                >
-                                                    Retirado
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {pendingRemovalsData.length === 0 && (
-                                        <div className="p-8 text-center text-slate-500 text-sm font-medium">
-                                            ¡Excelente! No hay retiros pendientes.
-                                        </div>
-                                    )}
+                                <div className="flex p-4 border-b flex items-center ">
+                                    <div className="text-sm text-amber-700 font-medium">
+                                        <Link href="/pages/scheduler/withdrawals/edit" className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-md text-sm font-medium">
+                                            Ver Retiros {withdrawals.length > 0 && `,${withdrawals.length} pendientes`}
+                                        </Link>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

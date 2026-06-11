@@ -1,11 +1,10 @@
-type clients = {
+interface clients {
     name: string;
     latitude: string;
     longitude: string;
     phone1: string;
     phone2: string;
     antenna_name: string;
-
 }
 
 export interface pendingRepairDataModel {

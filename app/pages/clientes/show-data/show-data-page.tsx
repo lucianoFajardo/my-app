@@ -176,10 +176,7 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                 onClose={() => setIsWhatsappOpen(false)}
                 name={`${props.name} ${props.lastname}`}
                 phone={props.phone1}
-                messageRecibe={`Hola ${props.name}, espero que estés bien.
-                    Quería comunicarme contigo para hablar sobre tu servicio de internet. 
-                    Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje. 
-                    ¡Gracias por ser parte de nuestra comunidad!`
+                messageRecibe={`Hola ${props.name}, te escribo para informarte sobre tu servicio de internet contratado con nosotros. Actualmente tienes el plan ${props.plan} en el sector ${props.sector}. Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos. ¡Gracias por ser parte de nuestra comunidad!`
                 }
             />
         </Dialog>

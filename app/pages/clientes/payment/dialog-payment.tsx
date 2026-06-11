@@ -34,7 +34,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
         if (!data) return [];
         return getAllPaymentMonths(data.initial_payment, data.paid_until_date || data.initial_payment);
     }, [data]);
-    
+
     if (!data) return null;
     const paidMonths = allMonths.filter(m => m.status === 'paid');
     const overdueMonths = allMonths.filter(m => m.status === 'overdue');
@@ -58,7 +58,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
             const lastPaidMonthDate = new Date(lastMonth);
             lastPaidMonthDate.setMonth(lastPaidMonthDate.getMonth() + 1);
             const newPaidUntilDate = lastPaidMonthDate.toISOString().split('T')[0];
-            console.log('nueva fecha de pago ' , newPaidUntilDate);
+            console.log('nueva fecha de pago ', newPaidUntilDate);
             //* --> Procesamos el pago del cliente
             await paymentDataClientAction(data, selectedDates, newPaidUntilDate, totalToPay); //*--> Procesamos los pagos y actualizamos la fecha hasta la que el cliente está pagado (*).(*)
             //* --> Estado nuevo del cliente con las fechas actualizadas despues de realizar el pago
@@ -94,9 +94,9 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                             <br />Plan Base: <span className="font-semibold text-primary">${data.plan}</span>
                             <br />Fecha de Instalación: <span className="font-medium text-foreground">{new Date(data.initial_payment).toLocaleDateString()}</span>
                         </DialogDescription>
-                        <Button 
-                        variant="outline" 
-                        className="shadow-sm border-border/80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 p-2 mt-3"
+                        <Button
+                            variant="outline"
+                            className="shadow-sm border-border/80 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 p-2 mt-3"
                             onClick={() => setIsWhatsappOpen(true)}
                         >
                             Abrir WhatsApp</Button>
@@ -193,16 +193,19 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     </Button>
                 </div>
             </DialogContent>
-            <DialogWhatsapp 
-            isOpen={isWhatsappOpen} 
-            onClose={() => setIsWhatsappOpen(false)} 
-            name={`${data.name} ${data.lastname}`}
-            phone={[data.phone1, data.phone2]} //* --> Enviar el array de numeros al componente para que el usuario pueda seleccionar el numero al que enviar el mensaje.
-            messageRecibe={`Hola ${data.name}, espero que estés bien.
+            <DialogWhatsapp
+                isOpen={isWhatsappOpen}
+                onClose={() => setIsWhatsappOpen(false)}
+                name={`${data.name} ${data.lastname}`}
+                phone={[data.phone1, data.phone2]}
+                messageRecibe={`Hola ${data.name}, espero que estés bien.
                 Quería comunicarme contigo para hablar sobre tu servicio de internet. 
-                Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje. 
-                ¡Gracias por ser parte de nuestra comunidad!`
-            }
+                dentro de poco se cumplira el periodo de pago de tu servicio, y queremos asegurarnos de que todo esté en orden para evitar interrupciones.
+                tu rango de fecha de pago es del : ${data.range_payment ? data.range_payment : "No registrado"}, y el monto del plan a pagar es de : $${data.plan}.
+                Si tienes alguna pregunta o necesitas asistencia, no dudes en responder a este mensaje.
+                ¡Gracias por ser parte de nuestra comunidad!
+                ++ ESTE ES UN MENSAJE AUTOMÁTICO ENVIADO DESDE NUESTRO SISTEMA :) ++ `
+                }
             />
         </Dialog>
     );

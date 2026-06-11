@@ -28,6 +28,7 @@ import AlertDialogDelete from '../delete/dialog-delete'
 import deleteRepairAction from '../actions/delete-repair-action'
 import editRepairStatusAction from '../actions/edit-repair-status-action'
 import OpenDialog from './open-dialog'
+import { weekDays } from '../../instalation/models/calendar-instal-model'
 
 export default function CalendarRepairsPage() {
     const [repairs, setRepairs] = useState<pendingRepairDataModel[]>();
@@ -35,7 +36,9 @@ export default function CalendarRepairsPage() {
     useEffect(() => {
         const fetchRepairs = async () => {
             await showDataRepairAction()
-                .then(res => setRepairs(res))
+                .then(res => {
+                    setRepairs(res);
+                })
                 .catch(error => { throw new Error("Error fetching repairs: " + error) })
         }
         fetchRepairs();
@@ -50,7 +53,6 @@ export default function CalendarRepairsPage() {
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState(new Date())
 
-
     //* --> Navegación de meses
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
@@ -61,8 +63,6 @@ export default function CalendarRepairsPage() {
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 })
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
     const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate })
-
-    const weekDays = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM']
 
     //* --> Reparaciones del día seleccionado
     const selectedDayRepairs = (repairs ?? []).filter(rep =>
@@ -101,11 +101,10 @@ export default function CalendarRepairsPage() {
     const deleteRepair = async () => {
         //* --> Fn para llamar al db y eliminar la reparacion si tengo 
         await deleteRepairAction(selectDelete!).then(() => {
-            console.log("Reparación eliminada correctamente", selectDelete);
             setRepairs(prev => prev?.filter(r => r.id_repair !== selectDelete!.id_repair));
             setIsOpenDelete(false);
         }).catch((error) => {
-            console.error("Error al eliminar la reparación: ", error);
+            throw new Error("Error al eliminar la reparación: " + error);
         }
         );
     }

@@ -33,12 +33,14 @@ export async function showDataRepairAction() {
                 status: i.status,
                 hour_repair: i.hour_repair,
                 date_repair: i.date_repair,
-                name: clientData.name || "Sin nombre",
-                antenna_name: clientData.antenna_name || "Sin antena",
-                latitude: clientData.latitude || "",
-                longitude: clientData.longitude || "",
-                phone1: clientData.phone1 || "",
-                phone2: clientData.phone2 || ""
+                clients: {
+                    name: clientData.name || "Sin nombre",
+                    antenna_name: clientData.antenna_name || "Sin antena",
+                    latitude: clientData.latitude || "",
+                    longitude: clientData.longitude || "",
+                    phone1: clientData.phone1 || "",
+                    phone2: clientData.phone2 || ""
+                }
             }
         })
         return formattedData;

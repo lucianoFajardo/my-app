@@ -16,7 +16,6 @@ import {
 } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Clock, CheckCircle2, X, Phone, Package } from 'lucide-react'
-
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,19 +24,26 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { DrawalsViewData } from '../model/drawals-model'
 import ViewDetailsWithdrawls from '../form/view-details-withdrawls'
 import { weekDays } from '../../instalation/models/calendar-instal-model'
+import showDataDrawalsAction from '../actions/show-data-drawals'
+import updateStatusDrawalsAction from '../actions/update-status-drawals'
+import deleteDataDrawalsAction from '../actions/delete-data-drawals'
 import DeleteDialog from '../delete/delete-dialog'
 
 export default function CalendarWithdrawalsPage() {
     const [withdrawals, setWithdrawals] = useState<DrawalsViewData[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         //* --> Agregar acción del backend aquí para traer la data.
         const fetchWithdrawals = async () => {
             try {
-                // const res = await showDataDrawalsCalendarAction();
-                // setWithdrawals(res);
+                await showDataDrawalsAction({ from: 0, to: 10 }).then((res) => {
+                    setWithdrawals(res);
+                    setLoading(false);
+                }).catch(e => { throw new Error("Error fetching withdrawals: " + e); });
             } catch (error) {
-                console.error("Error fetching withdrawals: " + error)
+                throw new Error("Error fetching withdrawals: " + error);
             }
         }
         fetchWithdrawals();
@@ -77,19 +83,18 @@ export default function CalendarWithdrawalsPage() {
     const totalCompletados = currentMonthWithdrawals.filter(w => w.status === 'completado').length
     const progressPercentage = totalProgramados === 0 ? 0 : (totalCompletados / totalProgramados) * 100
 
-    //* --> Acciones
+    //* --> Accion para marcar el retiro como completado
     const markAsCompleted = async (value: DrawalsViewData) => {
         try {
-            //* --> TÚ: Agrega fn para actualizar el estado del retiro a 'completado' en la db
-            // await editWithdrawalStatusAction(value);
-            
-            setWithdrawals((prev) => prev?.map((p) =>
-                p.id_withdrawal === value.id_withdrawal ?
-                    { ...p, status: 'completado' } : p
-            ));
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            //* --> fn para actualizar el estado del retiro a 'completado' en la db
+            await updateStatusDrawalsAction(value.id_withdrawal).then(() => {
+                setWithdrawals((prev) => prev?.map((p) =>
+                    p.id_withdrawal === value.id_withdrawal ?
+                        { ...p, status: 'completado' } : p
+                ));
+            }).catch(e => { throw new Error("Error updating withdrawal status: " + e); });
         } catch (error) {
-            console.error("Error al actualizar el estado del retiro")
+            throw new Error("Error al marcar el retiro como completado: " + error);
         }
     }
 
@@ -102,16 +107,17 @@ export default function CalendarWithdrawalsPage() {
     //* --> Eliminar retiro
     const deleteWithdrawal = async () => {
         try {
-            //* --> TÚ: Agrega Fn para llamar a db y eliminar/cancelar el retiro
-            // await deleteWithdrawalAction(selectDelete!);
-            
-            if (selectDelete) {
-                setWithdrawals(prev => prev?.filter(w => w.id_withdrawal !== selectDelete.id_withdrawal));
-                setIsOpenDelete(false);
-                setSelectDelete(undefined);
-            }
+            //* --> Fn para llamar a db y eliminar/cancelar el retiro
+            await deleteDataDrawalsAction(selectDelete!.id_withdrawal).then(() => {
+                console.log("Retiro eliminado correctamente");
+                if (selectDelete) {
+                    setWithdrawals(prev => prev?.filter(w => w.id_withdrawal !== selectDelete.id_withdrawal));
+                    setIsOpenDelete(false);
+                    setSelectDelete(undefined);
+                }
+            }).catch(e => { throw new Error("Error deleting withdrawal: " + e); });
         } catch (error) {
-            console.error("Error al eliminar el retiro: ", error);
+            throw new Error("Error al eliminar el retiro: " + error);
         }
     }
 
@@ -121,6 +127,18 @@ export default function CalendarWithdrawalsPage() {
         setIsOpenDetails(true);
     }
 
+    if (loading) {
+        return (
+            <div className="flex w-full h-[60vh] items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></span>
+                    <span className="text-muted-foreground font-medium text-sm animate-pulse">Cargando datos...</span>
+                </div>
+            </div>
+        );
+    }
+
+
     return (
         <div className="p-6 m-4 max-w-[1400px] mx-auto space-y-6 border rounded-2xl bg-white shadow-sm ">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -129,7 +147,6 @@ export default function CalendarWithdrawalsPage() {
                     <p className="text-slate-500">Gestiona los horarios y estados de los retiros de equipos.</p>
                 </div>
             </div>
-
             {/* Resumen Mensual */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <Card className="bg-blue-50 border-blue-100">
@@ -279,7 +296,7 @@ export default function CalendarWithdrawalsPage() {
                                                 </Badge>
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-slate-800 text-lg mb-1">{w.name_client}</h3>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-1">{w.name}</h3>
                                                 <div className="flex flex-col gap-1 mb-3">
                                                     <span className="text-sm text-slate-500 flex items-center gap-1.5">
                                                         <MapPin className="w-3.5 h-3.5" />
@@ -328,7 +345,7 @@ export default function CalendarWithdrawalsPage() {
                 </div>
             </div>
 
-            {/* Modal de Detalles del Retiro */}
+            {/*--> Modal de Detalles del Retiro */}
             {selectDetails && isOpenDetails && (
                 <ViewDetailsWithdrawls
                     IsOpenBool={() => isOpenDetails}
@@ -338,14 +355,14 @@ export default function CalendarWithdrawalsPage() {
             )}
 
             {/* Modal de Eliminación Integrado */}
-            {/* {selectDelete && isOpenDelete && (
+            {selectDelete && isOpenDelete && (
                 <DeleteDialog
                     isOpen={isOpenDelete}
                     onDelete={deleteWithdrawal}
                     onCancel={() => setIsOpenDelete(false)}
                     props={selectDelete}
                 />
-            )} */}
+            )}
         </div>
     )
 }

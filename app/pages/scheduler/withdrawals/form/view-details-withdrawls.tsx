@@ -46,7 +46,7 @@ export default function ViewDetailsWithdrawls({ IsOpenBool, onClose, data }: Vie
                         </div>
                         <div>
                             <p className="text-sm text-slate-500 font-medium">Cliente</p>
-                            <p className="font-semibold text-slate-800">{data.name_client}</p>
+                            <p className="font-semibold text-slate-800">{data.name}</p>
                         </div>
                     </div>
 

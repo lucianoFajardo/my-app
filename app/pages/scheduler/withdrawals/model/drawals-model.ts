@@ -14,6 +14,7 @@ export interface DrawalsClientModel {
 
 //* --> Interfaz para crear el modelo de los retiros programados. el desplegable
 export interface DrawalsModel {
+    readonly id_withdrawal: string;
     day_withdrawal: string;
     reason: string;
     hour_withdrawal: string;
@@ -24,7 +25,7 @@ export interface DrawalsModel {
 
 export interface DrawalsViewData {
     readonly id_withdrawal: string;
-    name_client: string;
+    name: string;
     phone1: string;
     phone2?: string;
     antenna_name: string;

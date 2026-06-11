@@ -17,14 +17,14 @@ export default function DeleteDialog({ onDelete, onCancel, isOpen, props }: Dele
                 <AlertDialogHeader>
                     <AlertDialogTitle>¿Cancelar este retiro?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Esta acción eliminará el retiro programado de {props.name_client}.
-                        Los datos no se podrán recuperar.
+                        Esta acción eliminará el retiro programado de {props.name},
+                        por lo cual volver a programarlo será necesario.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={onCancel}>Cancelar</AlertDialogCancel>
                     <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
-                        Sí, Cancelar Retiro
+                        Sí, eliminar
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
