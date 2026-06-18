@@ -24,13 +24,13 @@ export default function EditDateClientPage() {
     const [_, setSelectDataID] = useState('');
     const [clientSelectedDate, setClientSelectedDate] = useState<ClienteModel>();
 
-    // Parametros para la busqueda y filtrado de los datos
+    //*--> Parametros para la busqueda y filtrado de los datos
     const [searchParam, setSearchParam] = useState<string | undefined>("");
 
-    // Paginación de la tabla de clientes
+    //* --> Paginación de la tabla de clientes
     const [page, setPage] = useState(0);
-    const [loading, setLoading] = useState(true); // Cambiado a true inicial
-    const limit = 15;
+    const [loading, setLoading] = useState(true);
+    const limit = 30;
 
 
     useEffect(() => {
@@ -38,6 +38,7 @@ export default function EditDateClientPage() {
             const from = page * limit
             const to = from + limit - 1;
             const data = await readClientDataAction({ from, to, searchParam });
+            console.log("Datos obtenidos:", data.length);
             setDataClient(data);
             setLoading(false);
         };
@@ -268,7 +269,7 @@ export default function EditDateClientPage() {
                             variant="ghost"
                             size="icon"
                             onClick={handleNextPage}
-                            disabled={dataClient.length < (limit * (page + 1))}
+                            disabled={dataClient.length < limit}
                             className="h-8 w-8 rounded-l-none hover:bg-muted"
                         >
                             <ChevronRight className="w-4 h-4 text-foreground" />

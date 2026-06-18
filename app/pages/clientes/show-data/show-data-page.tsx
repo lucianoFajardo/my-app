@@ -175,7 +175,7 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
                 isOpen={isWhatsappOpen}
                 onClose={() => setIsWhatsappOpen(false)}
                 name={`${props.name} ${props.lastname}`}
-                phone={props.phone1}
+                phone={[props.phone1, props.phone2].filter(Boolean) as string[]}
                 messageRecibe={`Hola ${props.name}, te escribo para informarte sobre tu servicio de internet contratado con nosotros. Actualmente tienes el plan ${props.plan} en el sector ${props.sector}. Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos. ¡Gracias por ser parte de nuestra comunidad!`
                 }
             />

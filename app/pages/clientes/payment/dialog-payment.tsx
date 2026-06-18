@@ -193,11 +193,13 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     </Button>
                 </div>
             </DialogContent>
+
+            {/*--> Dialogo para enviar mensaje de WhatsApp al cliente */}
             <DialogWhatsapp
                 isOpen={isWhatsappOpen}
                 onClose={() => setIsWhatsappOpen(false)}
                 name={`${data.name} ${data.lastname}`}
-                phone={[data.phone1, data.phone2]}
+                phone={[data.phone1, data.phone2].filter(Boolean) as string[]}
                 messageRecibe={`Hola ${data.name}, espero que estés bien.
                 Quería comunicarme contigo para hablar sobre tu servicio de internet. 
                 dentro de poco se cumplira el periodo de pago de tu servicio, y queremos asegurarnos de que todo esté en orden para evitar interrupciones.

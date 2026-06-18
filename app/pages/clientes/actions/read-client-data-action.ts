@@ -9,7 +9,7 @@ export default async function readClientDataAction({ from, to, searchParam }: { 
         const supabase = await createClient();
         let query = supabase.from('clients').select('*');
         if (searchParam) {
-            query = query.or(`name.ilike.%${searchParam}%,lastname.ilike.%${searchParam}%,antennaName.ilike.%${searchParam}%`);
+            query = query.or(`name.ilike.%${searchParam}%,lastname.ilike.%${searchParam}%,antenna_name.ilike.%${searchParam}%`);
         }
         const { data, error } = await query.range(from, to);
         if (error) {
@@ -17,7 +17,7 @@ export default async function readClientDataAction({ from, to, searchParam }: { 
         }
         return data;
     } catch (error) {
-        throw new Error("Error al leer los datos del cliente", error as Error);
+        throw new Error("Error al leer los datos del cliente: " + (error as Error).message);
     }
 }
 

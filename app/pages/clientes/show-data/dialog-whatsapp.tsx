@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -25,10 +26,10 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
             : [];
 
     const [message, setMessage] = useState(messageRecibe || '')
-    const [phoneSelected, setPhoneSelected] = useState(phoneList[0] || "")
+    const [phoneSelected, setPhoneSelected] = useState(phoneList[0] || phoneList[1]);
 
     useEffect(() => {
-        setPhoneSelected(phoneList[0] || "");
+        setPhoneSelected(phoneList[0] || phoneList[1]);
     }, [phone])
 
     const handleSend = async () => {
@@ -59,7 +60,7 @@ export function DialogWhatsapp({ isOpen, onClose, name, phone , messageRecibe}: 
                         <SelectContent>
                             <SelectGroup>
                                 <SelectLabel>Números</SelectLabel>
-                                {/* 6. Iteramos sobre nuestra lista de números */}
+                                {/* Iteramos sobre nuestra lista de números */}
                                 {phoneList.map((num, i) => (
                                     <SelectItem key={i} value={num}>
                                         {num}
