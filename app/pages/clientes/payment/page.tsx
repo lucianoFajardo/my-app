@@ -23,8 +23,9 @@ import {
     Book,
 } from 'lucide-react';
 import { DialogPayment } from './dialog-payment';
+import LoadingTableData from './loading-table-data';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 30;
 
 const formatDate = (value?: string) => {
     if (!value) return 'N/A';
@@ -69,6 +70,7 @@ export default function DashboardClientes() {
 
     const loadData = async (page = currentPage, search = deferredQuery, status = statusFilter) => {
         setLoading(true);
+
         try {
             const from = (page - 1) * PAGE_SIZE;
             const to = from + PAGE_SIZE - 1;
@@ -80,12 +82,14 @@ export default function DashboardClientes() {
             });
             setClients(result.data);
             setTotalCount(result.count);
+
         } catch (error) {
             console.error('Error cargando clients', error);
             throw error;
         } finally {
             setLoading(false);
         }
+
     };
     useEffect(() => {
         setCurrentPage(1);
@@ -132,7 +136,7 @@ export default function DashboardClientes() {
     const toItem = Math.min(currentPage * PAGE_SIZE, totalCount);
 
     return (
-        <section className="min-h-[calc(100vh-7rem)] bg-[radial-gradient(circle_at_top_left,rgba(80,140,255,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.10),transparent_24%)]">
+        <Card className="max-w-7xl mx-auto top-0 w-full space-y-6 border-border/60 bg-card/90 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
                 <Card className="overflow-hidden border-border/60 bg-card/85 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur">
                     <CardContent className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
@@ -210,7 +214,6 @@ export default function DashboardClientes() {
                                     className="h-10 rounded-xl border-border/70 bg-background pl-9"
                                 />
                             </div>
-                            {/* FN para poder filtrar por los estados del cliente */}
                             <div className="w-full md:w-48">
                                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                                     <SelectTrigger className="h-10 rounded-xl border-border/70 bg-background">
@@ -261,19 +264,7 @@ export default function DashboardClientes() {
                                         </TableRow>
                                     ))
                                 ) : clients.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="px-6 py-16 text-center">
-                                            <div className="mx-auto max-w-md space-y-2">
-                                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
-                                                    <Search className="h-5 w-5 text-muted-foreground" />
-                                                </div>
-                                                <p className="text-base font-medium">No hay resultados para esa búsqueda</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Intenta con otro nombre o limpia el filtro para ver todos los clientes.
-                                                </p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
+                                    <LoadingTableData />
                                 ) : (
                                     clients.map((cliente) => {
                                         const clientName = cliente.client || 'Sin nombre';
@@ -286,7 +277,6 @@ export default function DashboardClientes() {
                                                                 {getInitials(clientName)}
                                                             </AvatarFallback>
                                                         </Avatar>
-
                                                         <div className="min-w-0">
                                                             <p className="truncate font-medium text-foreground">
                                                                 {clientName}
@@ -400,6 +390,6 @@ export default function DashboardClientes() {
                 data={selectedClient}
                 onPaySuccess={handlePaySuccess}
             />
-        </section>
+        </Card>
     );
 }

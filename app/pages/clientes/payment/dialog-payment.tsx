@@ -10,6 +10,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { DialogWhatsapp } from "../show-data/dialog-whatsapp";
+import { deleteSpecificMonthAction } from "../actions/payment-delete-action";
+
 
 type DialogPaymentProps = {
     isOpen: boolean;
@@ -80,6 +82,33 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
         setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
     };
 
+
+    const handleDeleteSpecificMonth = async (monthDate: string) => {
+        if (!confirm(`¿Estás seguro de eliminar el pago del mes: ${monthDate}?`)) return;
+        setLoading(true);
+        try {
+            const result = await deleteSpecificMonthAction(data.id_client, monthDate, Number(data.plan));
+            if (result.success) {
+                alert("Pago eliminado correctamente. Fechas y saldos actualizados.");
+                const updatedClient = {
+                    ...data,
+                    paid_until_date: result.newPaidUntilDate || data.initial_payment
+                };
+                onPaySuccess(updatedClient, []);
+                onClose();
+            } else {
+                console.error(result.error);
+                alert("Error al eliminar: " + result.error);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-md p-0 mx-auto rounded-xl shadow-xl bg-card border-border/60 overflow-hidden">
@@ -92,6 +121,7 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                         <DialogDescription className="mt-1 text-sm">
                             Cliente: <span className="font-medium text-foreground">{data.name} {data.lastname}</span>
                             <br />Plan Base: <span className="font-semibold text-primary">${data.plan}</span>
+                            <br />ID Cliente: <span className="font-medium text-foreground">{data.id_client}</span>
                             <br />Fecha de Instalación: <span className="font-medium text-foreground">{new Date(data.initial_payment).toLocaleDateString()}</span>
                         </DialogDescription>
                         <Button
@@ -168,6 +198,19 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                                     <div key={month.date} className="flex items-center gap-2 p-2 border border-emerald-200 bg-emerald-50 rounded-md opacity-70">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                         <span className="text-xs font-medium text-emerald-800 truncate">{month.name}</span>
+                                        <span className="text-xs text-muted-foreground truncate w-full flex justify-end">
+                                            {paidMonths[paidMonths.length - 1].date === month.date && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    className="h-6 w-6 p-0"
+                                                    onClick={() => handleDeleteSpecificMonth(month.date)}
+                                                    title="Eliminar este mes de pago"
+                                                >
+                                                    X
+                                                </Button>
+                                            )}
+                                        </span>
                                     </div>
                                 ))}
                             </CollapsibleContent>
@@ -175,8 +218,6 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
 
                     </div>
                 </ScrollArea>
-
-                {/* Footer de facturación */}
                 <div className="bg-muted/30 border-t px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="text-left w-full sm:w-auto">
                         <p className="text-sm text-muted-foreground">Meses a pagar: <span className="font-semibold text-foreground">{selectedDates.length}</span></p>
@@ -193,7 +234,6 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
                     </Button>
                 </div>
             </DialogContent>
-
             {/*--> Dialogo para enviar mensaje de WhatsApp al cliente */}
             <DialogWhatsapp
                 isOpen={isWhatsappOpen}

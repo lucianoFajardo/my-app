@@ -58,7 +58,6 @@ export async function getClientPaymentSnapshotById(
 }
 
 
-
 export interface ClientPaymentPageResult {
     data: ViewStateClientPaymentInfoInterface[];
     count: number;

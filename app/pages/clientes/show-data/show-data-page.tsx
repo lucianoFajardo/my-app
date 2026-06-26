@@ -33,7 +33,6 @@ interface ShowDataPageProps {
     isOpen: boolean
 }
 
-// Componente helper para dibujar filas de datos limpias
 const DataRow = ({ icon: Icon, label, value, highlight = false }: { icon: React.ElementType, label: string, value: React.ReactNode, highlight?: boolean }) => (
     <div className="flex items-center justify-between py-3 border-b border-border/40 last:border-0">
         <div className="flex items-center gap-3 text-muted-foreground">
@@ -54,8 +53,6 @@ export default function ShowDataPageClient({ props, onClose, isOpen }: ShowDataP
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl p-0 mx-auto rounded-xl shadow-xl bg-card border-border/60 overflow-hidden">
-
-                {/* Header */}
                 <DialogHeader className="bg-muted/30 px-6 py-5 border-b">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg text-primary">

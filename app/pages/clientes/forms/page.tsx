@@ -82,8 +82,6 @@ export default function ClienteFormPage() {
         }
     }
 
-
-
     return (
         <div className="container mx-auto py-3 px-2 md:px-0">
             <Card className="w-full max-w-4xl mx-auto border-border bg-card shadow-sm rounded-xl overflow-hidden">

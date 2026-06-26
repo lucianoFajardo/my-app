@@ -19,10 +19,11 @@ export function showOutstandingPayments({ props }: showOutstandingPaymentsProps)
                 <div>
                     <CardTitle className="text-lg font-bold text-red-900">Pagos Pendientes / Vencidos</CardTitle>
                     <CardDescription className="text-red-700/80">Clientes que se encuentran con pagos pendientes o vencidos.</CardDescription>
+                    <CardDescription className="text-red-700/80 text-sm">{props.length} clientes con pagos pendientes o vencidos.</CardDescription>
                 </div>
             </div>
             <Link href="/pages/clientes/payment" className="border-red-200 text-red-700 hover:bg-red-100 px-3 py-1 rounded-md text-sm font-medium">
-                Ver Instalaciones
+                Ver retiros
             </Link>
 
         </CardHeader>
