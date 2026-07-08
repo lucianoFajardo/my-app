@@ -5,7 +5,6 @@ import {
     Users, DollarSign, Clock,
     Calendar, ArrowUpRight,
     X, ArrowDownRight,
-    SparklesIcon,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -151,7 +150,6 @@ export default function DataShowComponent() {
                                 <div className="text-2xl font-bold text-slate-900">{withdrawals.length}</div>
                                 <p className="text-xs text-red-600 flex items-center mt-1 font-medium">
                                     <ArrowDownRight className="mr-1 h-3 w-3" />
-                                    {/* Requieren atención */}
                                 </p>
                             </CardContent>
                         </Card>
@@ -159,7 +157,6 @@ export default function DataShowComponent() {
 
                     {/* CHARTS SECTIONS */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Tabla de Deudores */}
                         {showOutstandingPayments({ props: pendingPaymentsData })}
                         {/* Lista de Retiros Pendientes (Ocupa 1/3 del espacio) */}
                         <Card className="shadow-sm flex flex-col h-full relative border-amber-100 overflow-hidden">
@@ -178,7 +175,7 @@ export default function DataShowComponent() {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0 flex-1 bg-white">
-                                <div className="flex p-4 border-b flex items-center ">
+                                <div className="flex p-4 border-b items-center ">
                                     <div className="text-sm text-amber-700 font-medium">
                                         <Link href="/pages/scheduler/withdrawals/edit" className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-md text-sm font-medium">
                                             Ver Retiros {withdrawals.length > 0 && `,${withdrawals.length} pendientes`}

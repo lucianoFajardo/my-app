@@ -23,7 +23,7 @@ export function showOutstandingPayments({ props }: showOutstandingPaymentsProps)
                 </div>
             </div>
             <Link href="/pages/clientes/payment" className="border-red-200 text-red-700 hover:bg-red-100 px-3 py-1 rounded-md text-sm font-medium">
-                Ver retiros
+                Ver pagos pendientes
             </Link>
 
         </CardHeader>
