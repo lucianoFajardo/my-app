@@ -85,7 +85,7 @@ export const DataClientPaymentInfo = async ({
             query = query.eq('status_pay_client', statusParam);
         }
 
-        //* --> Filtro de búsqueda (Adaptado a las columnas de tu vista)
+        //* --> Filtro de búsqueda (Adaptado a las columnas de la vista que cree )
         if (searchParam?.trim()) {
             query = query.or(`client.ilike.%${searchParam}%,status_pay_client.ilike.%${searchParam}%`);
         }
