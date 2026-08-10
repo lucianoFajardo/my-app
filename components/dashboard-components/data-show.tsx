@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { PaymentSheetModel } from "@/app/dashboard/model/payment-sheet-model";
 import {
   Users,
   DollarSign,
@@ -23,7 +24,7 @@ import { isToday } from "date-fns";
 import totalInstallationsAction from "@/app/dashboard/actions/total-installations";
 import totalAmountMonthsAction from "@/app/dashboard/actions/total-amount";
 import totalClientsAction from "@/app/dashboard/actions/total-clients";
-import { getPendingPaymentsAction } from "@/app/dashboard/actions/pending-payments-action";
+import { getPaymentsSheetAction, getPendingPaymentsAction } from "@/app/dashboard/actions/pending-payments-action";
 import { pendingPaymentModel } from "@/app/dashboard/model/pending-payment-model";
 import { showOutstandingPayments } from "./table-payment-data-component";
 import Link from "next/link";
@@ -34,6 +35,7 @@ import { ClienteModel } from "@/app/pages/clientes/models/client-model";
 
 export default function DataShowComponent() {
   const [loadingSheet, setLoadingSheet] = useState(false);
+  const [paymentsSheet, setPaymentsSheet] = useState<PaymentSheetModel[]>([]);
   const [datasheet, setDatasheet] = useState<ClienteModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [usersTotal, setUserTotal] = useState(0);
@@ -55,13 +57,15 @@ export default function DataShowComponent() {
           paymentPending,
           resWithdrawals,
           sheetUsers,
+          sheetPayments,
         ] = await Promise.all([
           totalClientsAction(),
           totalAmountMonthsAction(),
           totalInstallationsAction(),
           getPendingPaymentsAction(),
           getTotalWithdrawalsAction(),
-          getDataClientSheet()
+          getDataClientSheet(),
+          getPaymentsSheetAction(),
         ]);
         setUserTotal(Number(resUsers?.data ?? resUsers));
         setAmountTotal(Number(resAmount ?? 0));
@@ -70,6 +74,7 @@ export default function DataShowComponent() {
         setWithdrawals(resWithdrawals ?? []); // Almacenar los datos de retiros en el estado
         setLoading(false);
         setDatasheet(sheetUsers ?? []); // Almacenar los datos de clientes en el estado
+        setPaymentsSheet(sheetPayments ?? []); // Almacenar los datos de pagos en el estado
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         setLoading(false);
@@ -80,8 +85,8 @@ export default function DataShowComponent() {
 
   const handleExcelDateReport = async () => {
     const res = await exportDataToExcel({
-      payments: pendingPaymentsData,
-      clients: datasheet, //*--> agregar la lista de los clientes para poder descargar su data tambien
+      payments: paymentsSheet,
+      clients: datasheet,
       state: loadingSheet,
     });
     console.log(res.message);
@@ -113,7 +118,7 @@ export default function DataShowComponent() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Botón para generar reporte excel segui desde aqui */}
+            {/* Botón para generar reporte excel :) */}
             <Button
               className="bg-green-700 text-white hover:bg-green-800 hover:text-white"
               onClick={handleExcelDateReport}

@@ -1,8 +1,8 @@
 import { ClienteModel } from "@/app/pages/clientes/models/client-model";
-import { pendingPaymentModel } from "../model/pending-payment-model";
+import { PaymentSheetModel } from "../model/payment-sheet-model";
 
 interface ExportDataToExcelProps {
-  payments: pendingPaymentModel[];
+  payments: PaymentSheetModel[];
   clients: ClienteModel[];
   state: boolean;
 }
@@ -31,11 +31,14 @@ export default async function exportDataToExcel({
     }));
 
     const pagos = payments.map((p) => ({
-      id_cliente: p.id_client,
-      cliente: p.client,
-      antena: p.antenna_name,
-      cubierto_hasta: p.covered_up_to,
-      estado_pago: p.status_pay_client,
+      id_pago: p.id_payments,
+      nombre_cliente: p.clients.name + " " + p.clients.lastname,
+      telefono: p.clients.phone1,
+      telefono2: p.clients.phone2,
+      fecha_pago: p.payment_date,
+      monto_pagado: p.amount_pay,
+      meses_pagados: p.months_paid_count,
+      historial_meses: p.mouths_histoy_payment.join(", "),
     }));
 
     const wsPagos = XLSX.utils.json_to_sheet(pagos);
