@@ -24,7 +24,10 @@ import { isToday } from "date-fns";
 import totalInstallationsAction from "@/app/dashboard/actions/total-installations";
 import totalAmountMonthsAction from "@/app/dashboard/actions/total-amount";
 import totalClientsAction from "@/app/dashboard/actions/total-clients";
-import { getPaymentsSheetAction, getPendingPaymentsAction } from "@/app/dashboard/actions/pending-payments-action";
+import {
+  getPaymentsSheetAction,
+  getPendingPaymentsAction,
+} from "@/app/dashboard/actions/pending-payments-action";
 import { pendingPaymentModel } from "@/app/dashboard/model/pending-payment-model";
 import { showOutstandingPayments } from "./table-payment-data-component";
 import Link from "next/link";
@@ -34,7 +37,6 @@ import getDataClientSheet from "@/app/dashboard/actions/get-data-clients";
 import { ClienteModel } from "@/app/pages/clientes/models/client-model";
 
 export default function DataShowComponent() {
-  const [loadingSheet, setLoadingSheet] = useState(false);
   const [paymentsSheet, setPaymentsSheet] = useState<PaymentSheetModel[]>([]);
   const [datasheet, setDatasheet] = useState<ClienteModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,12 +86,10 @@ export default function DataShowComponent() {
   }, []);
 
   const handleExcelDateReport = async () => {
-    const res = await exportDataToExcel({
+    await exportDataToExcel({
       payments: paymentsSheet,
       clients: datasheet,
-      state: loadingSheet,
     });
-    console.log(res.message);
   };
 
   if (loading) {
@@ -178,7 +178,7 @@ export default function DataShowComponent() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-slate-900">
-                  ${amountTotal.toLocaleString()}
+                  ${amountTotal.toLocaleString("es-CL")}
                 </div>
                 <p className="text-xs text-emerald-600 flex items-center mt-1 font-medium">
                   <ArrowUpRight className="mr-1 h-3 w-3" />

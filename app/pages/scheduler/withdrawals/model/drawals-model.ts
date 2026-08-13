@@ -2,6 +2,7 @@
 export interface DrawalsClientModel {
     readonly id_client: string;
     name: string;
+    lastname: string;
     phone1: string;
     phone2: string;
     antenna_name: string;
@@ -26,6 +27,7 @@ export interface DrawalsModel {
 export interface DrawalsViewData {
     readonly id_withdrawal: string;
     name: string;
+    lastname: string;
     phone1: string;
     phone2?: string;
     antenna_name: string;

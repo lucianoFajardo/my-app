@@ -8,7 +8,7 @@ export type ClienteModel = {
     antenna_name: string;
     sector: string;
     initial_payment: string; // date (Primer pago)
-    plan: string;
+    plan: number;
     technical_name: string;
     phone1: string;
     phone2: string;
@@ -37,7 +37,7 @@ export type ClientPaymentInfo = {
     antenna_name: string
     initial_payment: string; // date (Primer pago)
     paid_until_date: string
-    plan: string
+    plan: number
     phone1: string
     phone2: string
     paidMonths: string[]

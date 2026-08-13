@@ -8,7 +8,7 @@ export default async function showWithdrawalsDataAction({ from, to, search }: { 
     try {
         try {
             let query = supabase.from('clients').select(
-                'id_client, name, phone1, phone2, antenna_name , withdrawals(status)');
+                'id_client, name, lastname, phone1, phone2, antenna_name , withdrawals(status)');
             if (search) {
                 query = query.or(`name.ilike.%${search}%,antenna_name.ilike.%${search}%`);
             }
@@ -19,6 +19,7 @@ export default async function showWithdrawalsDataAction({ from, to, search }: { 
             const formattedData = data.map((item) => ({
                 id_client: item.id_client,
                 name: item.name,
+                lastname: item.lastname,
                 phone1: item.phone1,
                 phone2: item.phone2,
                 antenna_name: item.antenna_name,

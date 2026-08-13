@@ -1,20 +1,23 @@
 export const plans = [
-    { value: "20.000", label: "Básico" },
-    { value: "25.000", label: "Avanzado" },
+    { value: 10000, label: "$10.000" },
+    { value: 15000, label: "$15.000" },
+    { value: 20000, label: "$20.000" },
+    { value: 25000, label: "$25.000" },
+    { value: 30000, label: "$30.000" },
+    { value: 35000, label: "$35.000" },
+    { value: 40000, label: "$40.000" },
+    { value: 45000, label: "$45.000" },
+    { value: 50000, label: "$50.000" },
+    { value: 55000, label: "$55.000" },
+    { value: 60000, label: "$60.000" },
+    { value: 65000, label: "$65.000" },
+
     // { value: "75.000", label: "Premium" },
 ]
 
 export const paymentMethods = [
     { value: "efectivo", label: "Efectivo" },
     { value: "transferencia", label: "Transferencia" },
-    { value: "tarjeta", label: "Tarjeta" },
-]
-
-export const sectors = [
-    { value: "Mula", label: "Mula" },
-    { value: "18", label: "18" },
-    { value: "hospital", label: "Hospital" },
-    { value: "boro", label: "Boro" },
 ]
 
 export const rangePaymentDates = [

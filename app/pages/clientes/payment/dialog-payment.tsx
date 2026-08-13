@@ -41,7 +41,9 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
     const paidMonths = allMonths.filter(m => m.status === 'paid');
     const overdueMonths = allMonths.filter(m => m.status === 'overdue');
     const futureMonths = allMonths.filter(m => m.status === 'future' || m.status === 'current');
+
     const totalToPay = selectedDates.length * Number(data.plan); //* --> Calcular el total a pagar y lo multiplicamos por el total del plan que tiene el cliente
+    console.log("Meses seleccionados para pagar:", totalToPay);
     const isPayButtonDisabled = loading || selectedDates.length === 0;
 
     const toggleSelection = (monthDate: string) => {
@@ -60,9 +62,8 @@ export function DialogPayment({ isOpen, onClose, data, onPaySuccess }: DialogPay
             const lastPaidMonthDate = new Date(lastMonth);
             lastPaidMonthDate.setMonth(lastPaidMonthDate.getMonth() + 1);
             const newPaidUntilDate = lastPaidMonthDate.toISOString().split('T')[0];
-            console.log('nueva fecha de pago ', newPaidUntilDate);
             //* --> Procesamos el pago del cliente
-            await paymentDataClientAction(data, selectedDates, newPaidUntilDate, totalToPay); //*--> Procesamos los pagos y actualizamos la fecha hasta la que el cliente está pagado (*).(*)
+            await paymentDataClientAction(data, selectedDates, totalToPay); //*--> Procesamos los pagos y actualizamos la fecha hasta la que el cliente está pagado (*).(*)
             //* --> Estado nuevo del cliente con las fechas actualizadas despues de realizar el pago
             const updatedClient: ClientPaymentInfo = {
                 ...data,

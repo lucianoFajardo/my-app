@@ -4,16 +4,13 @@ import { PaymentSheetModel } from "../model/payment-sheet-model";
 interface ExportDataToExcelProps {
   payments: PaymentSheetModel[];
   clients: ClienteModel[];
-  state: boolean;
 }
 
 export default async function exportDataToExcel({
   payments,
   clients,
-  state,
 }: ExportDataToExcelProps) {
   try {
-    state = true;
     const XLSX = await import("xlsx");
     const workbook = XLSX.utils.book_new();
 
@@ -42,7 +39,7 @@ export default async function exportDataToExcel({
     }));
 
     const wsPagos = XLSX.utils.json_to_sheet(pagos);
-    XLSX.utils.book_append_sheet(workbook, wsPagos, "PagosPendientes");
+    XLSX.utils.book_append_sheet(workbook, wsPagos, "Pagos_Clientes");
 
     const wsClientes = XLSX.utils.json_to_sheet(clientes);
     XLSX.utils.book_append_sheet(workbook, wsClientes, "Clientes");
@@ -51,7 +48,6 @@ export default async function exportDataToExcel({
     XLSX.writeFile(workbook, fileName);
     return { success: true, message: `Reporte de excel generado: ${fileName}` };
   } catch (error) {
-    state = false;
     console.error("Error generating Excel report:", error);
     return { success: false, message: "Error al generar el reporte de Excel." };
   }

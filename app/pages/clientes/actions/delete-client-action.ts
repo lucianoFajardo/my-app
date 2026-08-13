@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 export const deleteClientAction = async (clientId: string) => {
     try {
         const supabase = await createClient();
-        const { error: deletePaymentsError } = await supabase.from('payments').delete().eq('client_id', clientId);
+        const { data: deletedPayments, error: deletePaymentsError } = await supabase.from('payments').delete().eq('client_id', clientId).select();
         if (deletePaymentsError) {
             console.error("Error al eliminar los pagos del cliente:", deletePaymentsError);
             throw new Error (deletePaymentsError.message);

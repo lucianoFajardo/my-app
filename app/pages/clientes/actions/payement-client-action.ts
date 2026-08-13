@@ -5,7 +5,6 @@ import { ClientPaymentInfo } from "../models/client-model";
 export async function paymentDataClientAction(
     props: ClientPaymentInfo,
     dateToPay: string[],
-    newPaidUntilDate?: string,
     payedPlanAmount?: number,
 ) {
     //* --> Lógica para procesar el pago del cliente

@@ -46,7 +46,7 @@ export function getMenuList(pathname: string): Group[] {
       menus: [
         {
           href: "",
-          label: "Users",
+          label: "Clientes",
           icon: User,
           submenus: [
             {
@@ -110,20 +110,20 @@ export function getMenuList(pathname: string): Group[] {
         }
       ]
     },
-    {
-      groupLabel: "Configuración",
-      menus: [
-        {
-          href: "/Usuarios",
-          label: "Usuarios",
-          icon: Users
-        },
-        // {
-        //   href: "/account/edit",
-        //   label: "Ajustes de Cuenta",
-        //   icon: Settings
-        // }
-      ]
-    }
+    // {
+    //   groupLabel: "Configuración",
+    //   menus: [
+    //     {
+    //       href: "/Usuarios",
+    //       label: "Usuarios",
+    //       icon: Users
+    //     },
+    //     // {
+    //     //   href: "/account/edit",
+    //     //   label: "Ajustes de Cuenta",
+    //     //   icon: Settings
+    //     // }
+    //   ]
+    // }
   ];
 }

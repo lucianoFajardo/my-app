@@ -150,11 +150,11 @@ export default function DashboardClientes() {
         });
         setIsPaymentDialogOpen(true);
         setIsLoadingPayment(false);
-    }
+      }
     } catch (error) {
       console.error("Error al obtener info del cliente:", error);
     } finally {
-        setIsLoadingPayment(false); //*--> Cerrar loading de pago de los clientes en caso de error
+      setIsLoadingPayment(false); //*--> Cerrar loading de pago de los clientes en caso de error
     }
   };
 
@@ -458,7 +458,6 @@ export default function DashboardClientes() {
           </CardContent>
         </Card>
       </div>
-                        
       {isLoadingPayment && <LoadingPayment />}
       
       <DialogPayment
