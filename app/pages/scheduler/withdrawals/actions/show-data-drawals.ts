@@ -19,6 +19,7 @@ export default async function showDataDrawalsAction({ from, to, search }: { from
             id_withdrawal: withdrawal.id_withdrawal,
             id_client: withdrawal.clients.id_client,
             name: withdrawal.clients.name,
+            lastname: withdrawal.clients.lastname,
             phone1: withdrawal.clients.phone1,
             phone2: withdrawal.clients.phone2,
             antenna_name: withdrawal.clients.antenna_name,
