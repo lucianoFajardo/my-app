@@ -9,7 +9,3 @@ export default function page() {
     )
 }
 
-/** comentarios agregarlos aqui */
-// seguir aqui , agregar todo el apartado visual luego agregar el apartado logico 
-// optimizar lo maximo posible las llamadas a la base de datos y el rendimiento del dashboard
-

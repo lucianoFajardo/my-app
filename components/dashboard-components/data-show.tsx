@@ -11,6 +11,7 @@ import {
   X,
   ArrowDownRight,
   LucideFileSpreadsheet,
+  Bell,
 } from "lucide-react";
 import {
   Card,
@@ -24,6 +25,7 @@ import { isToday } from "date-fns";
 import totalInstallationsAction from "@/app/dashboard/actions/total-installations";
 import totalAmountMonthsAction from "@/app/dashboard/actions/total-amount";
 import totalClientsAction from "@/app/dashboard/actions/total-clients";
+import getRemindersTotal from "@/app/dashboard/actions/reminders-total";
 import {
   getPaymentsSheetAction,
   getPendingPaymentsAction,
@@ -38,6 +40,7 @@ import { ClienteModel } from "@/app/pages/clientes/models/client-model";
 
 export default function DataShowComponent() {
   const [paymentsSheet, setPaymentsSheet] = useState<PaymentSheetModel[]>([]);
+  const [remindersTotal, setRemindersTotal] = useState(0);
   const [datasheet, setDatasheet] = useState<ClienteModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [usersTotal, setUserTotal] = useState(0);
@@ -60,6 +63,7 @@ export default function DataShowComponent() {
           resWithdrawals,
           sheetUsers,
           sheetPayments,
+          remindersTotal,
         ] = await Promise.all([
           totalClientsAction(),
           totalAmountMonthsAction(),
@@ -68,6 +72,7 @@ export default function DataShowComponent() {
           getTotalWithdrawalsAction(),
           getDataClientSheet(),
           getPaymentsSheetAction(),
+          getRemindersTotal(),
         ]);
         setUserTotal(Number(resUsers?.data ?? resUsers));
         setAmountTotal(Number(resAmount ?? 0));
@@ -77,6 +82,7 @@ export default function DataShowComponent() {
         setLoading(false);
         setDatasheet(sheetUsers ?? []); // Almacenar los datos de clientes en el estado
         setPaymentsSheet(sheetPayments ?? []); // Almacenar los datos de pagos en el estado
+        setRemindersTotal(remindersTotal ?? 0);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         setLoading(false);
@@ -118,7 +124,24 @@ export default function DataShowComponent() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Botón para generar reporte excel :) */}
+            {/* Link para generar una nota */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard/reminders"
+                aria-label={`Recordatorios pendientes: ${remindersTotal ?? 0}`}
+                title="Ver recordatorios"
+                className="relative inline-flex size-10 items-center justify-center rounded-md bg-blue-700 text-white hover:bg-blue-800"
+              >
+                <Bell className="size-5" />
+
+                {(remindersTotal ?? 0) > 0 && (
+                  <span className="absolute -right-2 -top-2 flex min-w-5 items-center justify-center rounded-full border-2 border-white bg-red-600 px-1 text-[11px] font-bold leading-5 text-white">
+                    {remindersTotal > 99 ? "99+" : remindersTotal}
+                  </span>
+                )}
+              </Link>
+            </div>
+
             <Button
               className="bg-green-700 text-white hover:bg-green-800 hover:text-white"
               onClick={handleExcelDateReport}
