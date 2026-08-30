@@ -17,7 +17,6 @@ export interface ReminderFormModel {
 }
 
 export interface CreateReminderModel extends ReminderFormModel {
-  readonly id_reminders: string;
   client_key: string;
 }
 
